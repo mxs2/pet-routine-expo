@@ -1,38 +1,7 @@
-// ============================================================
-// Prática 1 — Modelagem do domínio Pet
-// Disciplina: Desenvolvimento Mobile (2026.2.DM) — CESAR School
-//
-// Leia o enunciado completo em `PRATICA.md` › "Prática 1".
-// Onde houver `/* … */` ou `TODO`, é a sua vez de escrever.
-// Os blocos marcados como VERIFICAÇÃO **não devem ser apagados**.
-//
-// Regras do domínio (resumo — o enunciado manda):
-//   • Um pet tem exatamente UMA espécie e exatamente UM porte.
-//   • O passeio do dia tem três desfechos: pendente, concluído ou cancelado.
-//   • `id`, `criadoEm` e o `statusPasseio` inicial são gerados pelo SERVIDOR —
-//     o formulário de cadastro não envia nenhum dos três.
-//   • A lista "Meus pets" mostra só nome, espécie e status do passeio (+ `id`).
-//
-// Restrições de avaliação: nenhum `any`; `as` só com justificativa em
-// comentário; nenhum campo de domínio tipado como `string` genérica.
-// ============================================================
-
-// ============================================================
-// TODO P1.1 — Union types literais. Nenhum destes pode ser `string`.
-//   EspeciePet     → cachorro, gato, ave, outro
-//   PortePet       → pequeno, medio, grande
-//   StatusPasseio  → pendente, concluido, cancelado
-// ============================================================
 export type EspeciePet = "cachorro" | "gato" | "ave" | "outro";
 export type PortePet = "pequeno" | "medio" | "grande";
 export type StatusPasseio = "pendente" | "concluido" | "cancelado";
 
-// ============================================================
-// TODO P1.2 — A entidade completa, como ela virá do servidor um dia.
-//   Campos: id, nome, especie, porte, statusPasseio, idadeMeses, criadoEm.
-//   Pense no tipo de cada um. Você vai justificar uma dessas escolhas
-//   na Prática 2.
-// ============================================================
 export interface Pet {
   id: string;
   nome: string;
@@ -44,24 +13,10 @@ export interface Pet {
   microchip: string;
 }
 
-// ============================================================
-// TODO P1.3 — Tipos DERIVADOS. Use utility types; não redigite campos.
-//   NovoPet         → o que o formulário de cadastro envia
-//   ResumoPet       → o que o card da lista "Meus pets" precisa
-//   AtualizacaoPet  → edição parcial de um pet já cadastrado
-//
-//   Dica: os utility types desta prática são `Omit`, `Pick` e `Partial`.
-//   Pergunte-se de QUEM cada um deve derivar — nem sempre é de `Pet`.
-// ============================================================
 export type NovoPet = Omit<Pet, 'id' | 'criadoEm' | 'statusPasseio'>;
 export type ResumoPet = Pick<Pet, 'id' | 'nome' | 'especie' | 'statusPasseio'>;
 export type AtualizacaoPet = Partial<Pet>;
 
-// ============================================================
-// TODO P1.4 — Rótulos legíveis, com switch exaustivo e SEM `default`.
-//   Sem `default`, o compilador avisa se um dia você acrescentar uma
-//   variante ao union e esquecer de tratá-la aqui. É esse o ponto.
-// ============================================================
 export function rotuloStatusPasseio(status: StatusPasseio): string {
   switch (status) {
     case 'pendente':
@@ -86,11 +41,6 @@ export function rotuloEspecie(especie: EspeciePet): string {
   }
 }
 
-// ============================================================
-// VERIFICAÇÃO — não apague
-// ============================================================
-
-// DEVEM compilar exatamente assim, sem campos a mais nem a menos:
 const novo: NovoPet = {
   nome: 'Fubá',
   especie: 'gato',
@@ -120,9 +70,8 @@ void resumo;
 void parcial;
 
 // ============================================================
-// TODO P1.5 — Teste final da prática (responda aqui, em comentário)
 //   Acrescente o campo `microchip: string` à interface `Pet`.
 //   Quantos dos três tipos derivados você precisou editar à mão?
 //
-//   Resposta: ...
+//   Resposta: nenhum. Os tres saem de Pet por utility type.
 // ============================================================
