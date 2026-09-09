@@ -9,22 +9,22 @@
 //         derivado precisou mudar.
 // ------------------------------------------------------------
 
-import type { Pet } from './types/pet';
-import { rotuloEspecie, rotuloStatusPasseio } from './types/pet';
-import { buscarPetDoUsuario } from './services/petService';
+import type { Pet } from "./types/pet";
+import { rotuloEspecie, rotuloStatusPasseio } from "./types/pet";
+import { buscarPetDoUsuario } from "./services/petService";
 
 export type EstadoTela<T> =
-  | { tipo: 'carregando' }
-  | { tipo: 'sucesso'; dados: T }
-  | { tipo: 'erro'; mensagem: string };
+  | { tipo: "carregando" }
+  | { tipo: "sucesso"; dados: T }
+  | { tipo: "erro"; mensagem: string };
 
 export function descreverTela(estado: EstadoTela<Pet>): string {
   switch (estado.tipo) {
-    case 'carregando':
-      return 'Carregando…';
-    case 'sucesso':
+    case "carregando":
+      return "Carregando…";
+    case "sucesso":
       return `${estado.dados.nome} · ${rotuloEspecie(estado.dados.especie)} · ${rotuloStatusPasseio(estado.dados.statusPasseio)}`;
-    case 'erro':
+    case "erro":
       return `Erro: ${estado.mensagem}`;
   }
 }
@@ -32,11 +32,13 @@ export function descreverTela(estado: EstadoTela<Pet>): string {
 export async function carregar(): Promise<EstadoTela<Pet>> {
   try {
     const dados = await buscarPetDoUsuario();
-    return { tipo: 'sucesso', dados };
+    return { tipo: "sucesso", dados };
   } catch (erro: unknown) {
     const mensagem =
-      erro instanceof Error ? erro.message : 'Falha inesperada ao carregar o pet.';
-    return { tipo: 'erro', mensagem };
+      erro instanceof Error
+        ? erro.message
+        : "Falha inesperada ao carregar o pet.";
+    return { tipo: "erro", mensagem };
   }
 }
 
@@ -51,9 +53,9 @@ const VERIFICACAO_DE_TIPOS: boolean = false;
 
 if (VERIFICACAO_DE_TIPOS) {
   // DEVEM compilar:
-  descreverTela({ tipo: 'carregando' });
-  descreverTela({ tipo: 'sucesso', dados: petExemplo });
-  descreverTela({ tipo: 'erro', mensagem: 'Sem conexão' });
+  descreverTela({ tipo: "carregando" });
+  descreverTela({ tipo: "sucesso", dados: petExemplo });
+  descreverTela({ tipo: "erro", mensagem: "Sem conexão" });
 }
 
 // DEVEM dar erro — descomente uma de cada vez (dentro do `if` acima):
