@@ -28,7 +28,10 @@ import { buscarPetDoUsuario } from './services/petService';
 //   'sucesso'     → dados: T
 //   'erro'        → mensagem: string
 // ============================================================
-export type EstadoTela<T> = /* … */ never;
+export type EstadoTela<T> =
+  | { tipo: 'carregando' }
+  | { tipo: 'sucesso'; dados: T }
+  | { tipo: 'erro'; mensagem: string };
 
 // ============================================================
 // TODO P2.7 — devolva o texto que a tela mostraria em cada estado.
@@ -39,7 +42,14 @@ export type EstadoTela<T> = /* … */ never;
 //     erro       → `Erro: ${mensagem}`
 // ============================================================
 export function descreverTela(estado: EstadoTela<Pet>): string {
-  /* … */
+  switch (estado.tipo) {
+    case 'carregando':
+      return 'Carregando…';
+    case 'sucesso':
+      return `${estado.dados.nome} · ${rotuloEspecie(estado.dados.especie)} · ${rotuloStatusPasseio(estado.dados.statusPasseio)}`;
+    case 'erro':
+      return `Erro: ${estado.mensagem}`;
+  }
 }
 
 // ============================================================
@@ -49,7 +59,14 @@ export function descreverTela(estado: EstadoTela<Pet>): string {
 //   Lembre: em TypeScript o `catch` recebe `unknown`, não `Error`.
 // ============================================================
 export async function carregar(): Promise<EstadoTela<Pet>> {
-  /* … */
+  try {
+    const dados = await buscarPetDoUsuario();
+    return { tipo: 'sucesso', dados };
+  } catch (erro: unknown) {
+    const mensagem =
+      erro instanceof Error ? erro.message : 'Falha inesperada ao carregar o pet.';
+    return { tipo: 'erro', mensagem };
+  }
 }
 
 // ============================================================
@@ -78,7 +95,3 @@ if (VERIFICACAO_DE_TIPOS) {
 
 // Rode com `npx tsx src/tela-pet.ts` depois de descomentar:
 // carregar().then((estado) => console.log(descreverTela(estado)));
-
-void rotuloEspecie;
-void rotuloStatusPasseio;
-void buscarPetDoUsuario;
