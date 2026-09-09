@@ -13,47 +13,47 @@ export interface Pet {
   microchip: string;
 }
 
-export type NovoPet = Omit<Pet, 'id' | 'criadoEm' | 'statusPasseio'>;
-export type ResumoPet = Pick<Pet, 'id' | 'nome' | 'especie' | 'statusPasseio'>;
+export type NovoPet = Omit<Pet, "id" | "criadoEm" | "statusPasseio">;
+export type ResumoPet = Pick<Pet, "id" | "nome" | "especie" | "statusPasseio">;
 export type AtualizacaoPet = Partial<Pet>;
 
 export function rotuloStatusPasseio(status: StatusPasseio): string {
   switch (status) {
-    case 'pendente':
-      return 'Aguardando passeio';
-    case 'concluido':
-      return 'Passeio concluído';
-    case 'cancelado':
-      return 'Passeio cancelado';
+    case "pendente":
+      return "Aguardando passeio";
+    case "concluido":
+      return "Passeio concluído";
+    case "cancelado":
+      return "Passeio cancelado";
   }
 }
 
 export function rotuloEspecie(especie: EspeciePet): string {
   switch (especie) {
-    case 'cachorro':
-      return 'Cachorro';
-    case 'gato':
-      return 'Gato';
-    case 'ave':
-      return 'Ave';
-    case 'outro':
-      return 'Outro';
+    case "cachorro":
+      return "Cachorro";
+    case "gato":
+      return "Gato";
+    case "ave":
+      return "Ave";
+    case "outro":
+      return "Outro";
   }
 }
 
 const novo: NovoPet = {
-  nome: 'Fubá',
-  especie: 'gato',
-  porte: 'pequeno',
+  nome: "Fubá",
+  especie: "gato",
+  porte: "pequeno",
   idadeMeses: 30,
-  microchip: 'MXS2',
+  microchip: "MXS2",
 };
 
 const resumo: ResumoPet = {
-  id: 'p1',
-  nome: 'Fubá',
-  especie: 'gato',
-  statusPasseio: 'pendente',
+  id: "p1",
+  nome: "Fubá",
+  especie: "gato",
+  statusPasseio: "pendente",
 };
 
 const parcial: AtualizacaoPet = { idadeMeses: 31 };
