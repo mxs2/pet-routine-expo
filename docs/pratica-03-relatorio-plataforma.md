@@ -1,74 +1,45 @@
-<!--
-  Prática 3 — Relatório de decisão de plataforma
-  Nível ⭐⭐ · ~1 h · Entrega individual · 1 a 2 páginas
-  Enunciado completo (contexto e restrições do cliente): `PRATICA.md` › "Prática 3".
+# Relatório de decisão de plataforma: App de Rotina Pet
 
-  TODO P3 — preencha TODAS as lacunas abaixo. A estrutura é fixa; o conteúdo é seu.
-  Não existe uma resposta única correta — o que é avaliado é a qualidade do raciocínio.
--->
-
-# Relatório de decisão de plataforma — App de Rotina Pet
-
-**Autor:** ____________________   **Data:** ____________
+**Autor:** Mateus Xavier **Data:** 08/09/2026
 
 ## 1. Recomendação
 
-<!-- TODO P3.1 — escolha UMA abordagem e diga qual. Sem "depende". -->
-
-Para o app do tutor, recomendo a abordagem **____________________**
-(nativo | cross-platform | web/PWA).
+Para o app do tutor, recomendo a abordagem **cross-platform** (React Native com Expo).
 
 ## 2. Restrições que sustentam a escolha
 
-<!-- TODO P3.2 — cite TRÊS restrições do enunciado, TEXTUALMENTE.
-     Não argumente em abstrato ("cross-platform é mais rápido de desenvolver"
-     não é uma restrição do enunciado; "2 devs, nenhum com Kotlin ou Swift" é). -->
-
-| # | Restrição do enunciado | Como ela empurra para a minha escolha |
-|---|---|---|
-| 1 | | |
-| 2 | | |
-| 3 | | |
+| #   | Restrição do enunciado                                                        | Como ela empurra para a minha escolha                                  |
+| --- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | "2 desenvolvedores, ambos com TypeScript e React, nenhum com Kotlin ou Swift" | Nativo seriam duas bases em linguagens que ninguém domina.             |
+| 2   | "Capturar a localização GPS durante passeios"                                 | Elimina PWA. GPS em background não é confiável no navegador Android.   |
+| 3   | "R$ 90 mil" e "3 meses até o piloto"                                          | Uma base de código só. Dois apps nativos dobram UI e QA no mesmo teto. |
 
 ## 3. O que estamos perdendo
 
-<!-- TODO P3.3 — toda decisão tem custo. Uma resposta que não nomeia
-     nenhum custo está escondendo o custo, não eliminando-o. -->
+Abordagem rejeitada: **nativo** (Kotlin e Swift).
 
-Abordagem rejeitada: ____________________
-
-O que a organização deixa de ganhar ao não escolhê-la:
-____________________________________________________________
+- RAM e tempo de inicialização, justo nos 65% com menos de 4 GB.
+- API nova do sistema só chega quando alguém escreve o módulo nativo.
 
 ## 4. O painel das clínicas
 
-<!-- TODO P3.4 — lembre que o painel é usado em desktop, na recepção. -->
+Mesma tecnologia do app do tutor? ( ) sim (x) não
 
-Mesma tecnologia do app do tutor?  ( ) sim   ( ) não
-
-Justificativa:
-____________________________________________________________
+- React web, não React Native. Roda em desktop, sem loja.
+- Compartilha os tipos do domínio e o cliente de API.
 
 ## 5. Risco técnico e mitigação
 
-<!-- TODO P3.5 — risco CONCRETO e específico deste projeto
-     (pense em: Android de entrada com <4 GB de RAM, GPS em background,
-     sincronização offline, notificações). Nada de "pode dar atraso". -->
-
-| | |
-|---|---|
-| **Risco concreto** | |
-| **Por que ele é plausível aqui** | |
-| **Como eu mitigaria** | |
+|                                  |                                                                                                                         |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Risco concreto**               | GPS do passeio para com a tela trancada e o trajeto chega incompleto.                                                   |
+| **Por que ele é plausível aqui** | Android mata background com pouca RAM, e 65% do público tem menos de 4 GB.                                              |
+| **Como eu mitigaria**            | `expo-location` com foreground service, pontos em SQLite local, sincronizar depois. Testar em aparelho de entrada real. |
 
 ## 6. A pergunta que eu faria ao cliente
 
-<!-- TODO P3.6 — uma pergunta que REALMENTE mudaria a decisão.
-     Se a resposta do cliente não altera nada, a pergunta não vale nota. -->
-
 Algo que o enunciado NÃO informa e que poderia mudar minha resposta:
 
-____________________________________________________________
+- As clínicas usam leitor de microchip com SDK proprietário só para nativo?
 
-Se a resposta fosse ____________, eu mudaria minha recomendação para
-____________, porque ____________.
+Se fosse **sim**, eu mudaria para **nativo no Android**: ponte nativa para SDK de terceiro não sai em 3 meses sem Kotlin no time.
