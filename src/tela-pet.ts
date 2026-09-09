@@ -11,11 +11,13 @@
 //   uma linha cada, antes de entregar.
 //
 //   1. Qual estado impossível a união discriminada torna não representável?
-//      R: ...
+//      R: carregando com dados. Cada campo só existe na variante que o declara.
 //   2. Por que `carregar()` captura a exceção em vez de deixá-la subir?
-//      R: ...
+//      R: exceção não é estado de tela. A falha vira `{ tipo: 'erro' }` para a
+//         tela sempre ter o que renderizar.
 //   3. Uma decisão de modelagem que você tomou na Prática 1 e o motivo.
-//      R: ...
+//      R: derivei NovoPet com Omit. Quando `microchip` entrou em Pet, nenhum
+//         derivado precisou mudar.
 // ------------------------------------------------------------
 
 import type { Pet } from './types/pet';
