@@ -10,6 +10,7 @@
 //   Ação de toque via onPress do Text, não Touchable*.
 // ============================================================
 import { StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 
 import { type Pet, rotuloEspecie, rotuloStatusPasseio } from '../types/pet';
 import { cores, espaco, tipografia } from '../theme';
@@ -27,7 +28,16 @@ type CardPetProps = {
 export function CardPet({ /* TODO P2.12: desestruture as props */ pet, aoRegistrarPasseio }: CardPetProps) {
   return (
     <Card>
-      {/* TODO P2.13: nome do pet (Text com estilo de título) */}
+      {/* TODO P3.25: quando pet.fotoUri existir, mostre a miniatura com expo-image.
+                Quando não existir, mostre um placeholder (View com cor de fundo).
+                Exemplo:
+                  pet.fotoUri
+                    ? <Image source={{ uri: pet.fotoUri }} style={styles.miniatura}
+                        contentFit="cover" recyclingKey={pet.id} transition={200} />
+                    : <View style={[styles.miniatura, styles.miniaturaVazia]} />
+                TODO P3.26: contentFit explícito — por que "cover" e não "contain"?
+                  Confira o import: expo-image, NÃO react-native. */}
+
       <Text style={tipografia.titulo}>{pet.nome}</Text>
 
       {/* TODO P2.14: uma View com flexDirection 'row' e justifyContent 'space-between'.
@@ -42,6 +52,12 @@ export function CardPet({ /* TODO P2.12: desestruture as props */ pet, aoRegistr
       {/* TODO P2.15: idade em meses (Text com estilo de legenda).
             Ex: "24 meses" */}
       <Text style={tipografia.legenda}>{pet.idadeMeses} meses</Text>
+
+      {/* TODO P3.27: quando pet.local existir, mostre latitude e longitude de forma
+                legível para HUMANOS, com o raio de precisão em metros.
+                Coordenada crua com 14 casas decimais não é informação para o usuário.
+                Exemplo: "Local: -8.054, -34.871 (±12m)"
+                Quando pet.local for undefined, não mostre nada (nem placeholder). */}
 
       {/* TODO P2.16: um Text com onPress que chame aoRegistrarPasseio.
             Texto: "Registrar passeio".
@@ -65,5 +81,17 @@ const styles = StyleSheet.create({
     marginTop: espaco.md,
     fontWeight: 'bold',
     color: cores.primaria,
+  },
+  miniatura: {
+    // TODO P3.25: dimensões da miniatura.
+    //   Ex: width: '100%', height: 120, borderRadius: espaco.sm
+    width: '100%' as const,
+    height: 120,
+    borderRadius: espaco.sm,
+  },
+  miniaturaVazia: {
+    // TODO P3.25: estilo do placeholder quando não há foto.
+    //   Ex: backgroundColor: cores.fundo (ou um cinza claro)
+    backgroundColor: cores.fundo,
   },
 });

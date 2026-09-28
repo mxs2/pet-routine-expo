@@ -41,6 +41,11 @@ export interface Pet {
   statusPasseio: StatusPasseio;
   idadeMeses: number;
   criadoEm: Date;
+  // Prática 3 — campos de sensor (opcionais de propósito):
+  // O usuário pode negar permissão, e o app tem que continuar funcionando.
+  // Um pet sem foto e sem local ainda é um pet.
+  local?: { latitude: number; longitude: number; precisaoMetros: number };
+  fotoUri?: string;
 }
 
 // ============================================================

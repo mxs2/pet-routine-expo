@@ -1,464 +1,498 @@
-# Prática 2
+# Prática 3
 
 > **Disciplina:** Desenvolvimento Mobile (2026.2.DM) — CESAR School
 > **Domínio destas práticas:** **App de Gestão e Rotina Pet** (`Pet`).
 
 | Projeto                    | Repositório        | Branch da disciplina |
 | -------------------------- | ------------------ | -------------------- |
-| App de Gestão e Rotina Pet | `pet-routine-expo` | `feature/pratica_02` |
+| App de Gestão e Rotina Pet | `pet-routine-expo` | `feature/pratica_03` |
 
 ## Como usar este arquivo
 
 - **Toda prática vem com um scaffold** — um esqueleto de código com marcações `// TODO`. Você completa os trechos que faltam; não precisa escrever do zero, e não deve apagar a estrutura dada.
-- **Apague o comentário `// TODO` quando resolver aquele ponto.** Um arquivo sem nenhum `TODO` é uma prática concluída.
+- **Apague o comentário `// TODO` quando resolver aquele ponto.** Um arquivo sem nenhum `TODO` é uma prática concluída, e é assim que o professor confere rápido quem parou onde.
 
-> 📦 **Componentes desta prática** — use **somente** estes sete: `View`, `ScrollView`, `Text`, `TextInput`, `Image`, `Button`, `Switch`, mais `StyleSheet` e Flexbox. Componentes de toque estilizáveis (`TouchableOpacity` etc.) e componentes de lista **não são assunto desta prática** e não devem aparecer nas entregas. Onde precisar de interação: `onPress` no `Button`, `onPress` no `Text`, `onChangeText` no `TextInput`, `onValueChange` no `Switch`.
+> 🔴 **Esta prática precisa de aparelho físico para a parte de sensores.** O iOS Simulator **não tem câmera, acelerômetro nem giroscópio**. O Android Emulator tem sensores virtuais e uma câmera de cena virtual — serve para testar o fluxo, não a experiência. **Traga o celular carregado, com o Expo Go instalado e o cabo.** Se não tiver, faça em dupla.
 
-> ⚠️ **Regras de escrita válidas para todas as práticas** — são exatamente os pontos que material antigo ensina errado:
+> 📦 **O que esta prática acrescenta ao seu catálogo:** **`Pressable`**, **`SectionList`**, **`expo-location`**, **`expo-camera`** (`CameraView`, `useCameraPermissions`) e **`expo-image`**. Tudo das Práticas 1 e 2 continua valendo e deve ser usado — `View`, `Text`, `Image`, `TextInput`, `ScrollView`, `Button`, `Switch`, `StyleSheet`, Flexbox e `useState`. **Não use nas entregas:** componentes de toque que não sejam o `Pressable`, bibliotecas de lista de terceiros, `useEffect`/`useRef` para sensores (chegam na Aula 6), navegação/`expo-router` (Aula 7), mapas, chamadas de rede.
+
+> ⚠️ **Regras de escrita válidas para todas as práticas** — as cinco primeiras vêm da Prática 2, as três seguintes são de listas, e as seis últimas são de sensores:
 > 1. **Sem `JSX.Element`** como tipo de retorno. Não anote o retorno; o TypeScript infere.
 > 2. **Sem `as const`** dentro de `StyleSheet.create`. Em `theme.ts`, sim.
-> 3. **`gap`** para espaçar irmãos, não `margin` em cada filho.
+> 3. **`gap`** (ou `ItemSeparatorComponent`) para espaçar irmãos, nunca `margin` em cada filho.
 > 4. **`boxShadow`** para sombra, não o quarteto `shadow*` + `elevation`.
 > 5. **Zero `any`.**
+> 6. **A ação vai em `onPress`**, nunca em `onPressIn`. Feedback visual vai no `pressed`.
+> 7. **`renderItem` declarado fora do componente**, sempre que não depender de estado local.
+> 8. **Toda lista tem `ListEmptyComponent`.** Sem exceção — inclusive as das práticas.
+> 9. **Todo `addListener` / `watchPositionAsync` tem um `remove()` no mesmo arquivo.** Sem exceção.
+> 10. **Estados de falha são distintos na tela.** "Permissão negada", "permissão bloqueada" e "serviço desligado" são três mensagens, não uma.
+> 11. **Nenhuma `Accuracy` sem justificativa.** Se escreveu `High`, saiba dizer por quê.
+> 12. **`contentFit` explícito** em toda `Image` do `expo-image`.
+> 13. **Confira o import do `Image`.** `expo-image` e `react-native` têm um componente com o mesmo nome.
+> 14. **`base64` só quando for realmente usado.** Para exibir, o `uri` basta.
+
+**O domínio, estendido com dois campos de sensor:**
+
+```tsx
+type StatusPasseio = 'pendente' | 'concluido' | 'cancelado';
+type EspeciePet = 'cachorro' | 'gato' | 'ave' | 'outro';
+
+interface Pet {
+  id: string;
+  nome: string;
+  especie: EspeciePet;
+  porte: PortePet;
+  statusPasseio: StatusPasseio;
+  idadeMeses: number;
+  criadoEm: Date;
+  // novidades da Prática 3 — opcionais de propósito:
+  local?: { latitude: number; longitude: number; precisaoMetros: number };
+  fotoUri?: string;
+}
+```
+
+> 💡 **Por que os dois campos são opcionais:** o usuário pode negar a permissão, e o app tem que continuar funcionando. Um pet sem foto e sem local ainda é um pet. Se o seu tipo obriga os dois, o seu app quebra para quem disse "não".
 
 **Setup:**
 
 ```bash
 git clone https://github.com/renanalencar/pet-routine-expo pet-routine-expo
 cd pet-routine-expo
-git checkout feature/pratica_02
+git checkout feature/pratica_03
 npm install
 npx expo start
 ```
 
+> As dependências de sensor (`expo-location`, `expo-sensors`, `expo-camera`, `expo-image`) já estão no `package.json` desta branch.
+
 ---
 
-# Prática 2.1 — Tela do pet em destaque com estilo
+# Prática 3.1 — A tela de lista com registro de passeio
 
-**Nível:** ⭐⭐⭐ · **Tempo estimado:** 4 a 5 h · **Entrega:** individual · **Prazo:** próxima aula
+**Nível:** ⭐⭐⭐ · **Tempo:** 5–6 h · **Entrega:** branch `feature/pratica_03` do repositório do grupo
 
 ## Contexto
 
-Na Prática 1 você modelou o domínio `Pet` em TypeScript puro: tipos, serviço mockado e estado de tela. Agora é hora de **construir a tela de verdade** — e construí-la **com estilo sustentável desde o início**.
+Na Prática 2 vocês deixaram a tela do projeto apresentável: tokens, `CardPet`, Flexbox, um formulário. Mas ela só mostrava um pet em destaque, e o botão era um remendo.
 
-Esta tela mostra **uma única entidade em destaque**, não uma lista — listas e `FlatList` chegam mais adiante no semestre. Além da tela principal, você vai montar um **formulário** para cadastrar/editar um pet e um **sistema de tokens** que mantém cores e espaçamentos consistentes no app todo.
+Agora ela vira uma tela de produto: uma **lista de verdade** com itens que reagem ao toque e os estados que uma lista real tem. E o registro de passeio ganha **contexto** — onde aconteceu e com o que se parecia — sem que ninguém precise digitar nada.
 
-## O que já está pronto (Prática 1)
+## O que entregar
 
-Estes arquivos vieram da prática anterior e **não precisam ser reescritos**:
-
-| Arquivo | O que contém |
-|---|---|
-| `src/types/pet.ts` | `Pet`, unions literais, tipos derivados, rótulos, `EstadoTela<T>` |
-| `src/services/pet-service.ts` | `buscarPetEmDestaque()`, `registrarPasseio()`, mock com atraso |
-| `src/tela-pet.ts` | Lógica de tela pura (verificação em TS) |
+1. **Uma tela principal** que lista os pets com **`SectionList`**, agrupando por um critério que faça sentido para o produto (status do passeio, espécie ou faixa etária — escolham e justifiquem no README).
+2. **Item tocável** com `Pressable`, reaproveitando o `CardPet` da Prática 2 por dentro. O toque alterna o status do passeio.
+3. **Ação secundária no toque longo** (`onLongPress`) — remover o pet da lista.
+4. **Os quatro estados da lista**, todos implementados:
+   - **com dados** — o caso normal;
+   - **vazio** — `ListEmptyComponent`, com um texto que diga ao usuário **o que fazer**;
+   - **atualizando** — `refreshing` + `onRefresh`;
+   - **filtrado sem resultado** — um `TextInput` de busca no `ListHeaderComponent` que filtra por nome; quando nada casa, o estado vazio diz isso, **não** a mesma frase do primeiro acesso.
+5. **Registro de passeio com sensores** — ao tocar em "Registrar passeio" no `CardPet`, uma tela de registro captura:
+   - **localização** do momento (`expo-location`), exibida como texto legível com o raio de precisão;
+   - **foto** (`expo-camera`), exibida como prévia com `expo-image`.
+6. **Miniatura da foto no card** — o `CardPet` agora mostra a foto (quando houver) usando `expo-image`.
+7. **Tratamento de permissões** com mensagens **distintas** para cada cenário de falha:
+   - permissão de localização negada (`canAskAgain: true`),
+   - permissão de localização bloqueada (`canAskAgain: false`),
+   - serviço de localização desligado,
+   - permissão de câmera negada,
+   - sensor/hardware indisponível.
+8. **Degradação graciosa** — negando tudo, o app funciona. Um pet sem foto e sem local renderiza sem quebrar.
+9. **README.md** com uma seção "Decisões da Prática 3" respondendo:
+   - por que `SectionList` e não `FlatList` neste caso;
+   - onde vocês agrupam os dados, e por que **não** é dentro do JSX;
+   - a escolha de `Accuracy` e por que (bateria vs. precisão);
+   - as limitações assumidas (tela de registro sem cleanup de subscription, foto no cache e não na galeria).
 
 ## Estrutura de arquivos a criar/completar
 
 ```
 pet-routine-expo/
-├── App.tsx                          ← tela principal (scaffold 4)
+├── App.tsx                              ← tela principal (SectionList + condicional)
 └── src/
-    ├── theme.ts                     ← tokens de design (scaffold 1)
-    ├── types/pet.ts                 ← já pronto (Prática 1)
-    ├── services/pet-service.ts      ← já pronto (Prática 1)
+    ├── data/
+    │   └── pets.ts                      ← mock de dados (20+ itens)
+    ├── lib/
+    │   └── agrupar.ts                   ← agrupamento e filtragem (sem JSX)
     ├── components/
-    │   ├── card.tsx                  ← card reutilizável (scaffold 2)
-    │   └── card-pet.tsx             ← card do pet (scaffold 3)
-    └── screens/
-        └── pet-form.tsx             ← formulário (scaffold 5)
+    │   ├── card.tsx                      ← já pronto (Prática 2)
+    │   ├── card-pet.tsx                 ← estendido com foto e localização
+    │   ├── item-pet.tsx                 ← Pressable envolvendo CardPet
+    │   └── lista-vazia.tsx              ← estado vazio da lista
+    ├── screens/
+    │   ├── pet-form.tsx                 ← já pronto (Prática 2)
+    │   └── tela-registro.tsx            ← registro com GPS + câmera
+    ├── theme.ts                         ← já pronto (Prática 2)
+    ├── types/pet.ts                     ← estendido com local? e fotoUri?
+    └── services/pet-service.ts          ← já pronto (Prática 1)
 ```
 
-> **Ordem recomendada:** theme.ts → card.tsx → card-pet.tsx → App.tsx → pet-form.tsx.
-> O `npm run typecheck` vai apontar erros nos arquivos que dependem de tokens ainda não definidos — resolva o theme primeiro.
+> **Ordem recomendada:** data/pets.ts → lib/agrupar.ts → item-pet.tsx → lista-vazia.tsx → card-pet.tsx (atualizações) → App.tsx (lista) → tela-registro.tsx → App.tsx (condicional de registro).
 
----
+## Scaffolds
 
-## Scaffold 1 — `src/theme.ts`
+Os scaffolds com `// TODO` já estão nos arquivos da branch. Aqui, os trechos-chave para referência.
 
-Tokens são **valores** (cores, espaçamentos, tipografia), não layouts prontos. `as const` vai aqui; nunca dentro de `StyleSheet.create`.
+### `src/data/pets.ts`
 
 ```ts
-export const cores = {
-  fundo: '#FEF7EE',
-  cartao: '#FFFFFF',
-  // TODO P2.1: complete com texto, textoFraco, primaria, sucesso, erro
-} as const;
+import type { Pet } from '../types/pet';
 
-export const espaco = {
-  // TODO P2.2: escala de 4+ degraus (xs, sm, md, lg). Progressão consistente.
-} as const;
-
-export const tipografia = {
-  // TODO P2.3: titulo, corpo, legenda. Objetos de estilo de TEXTO.
-} as const;
-
-// TODO P2.4: por que `as const` aqui e não em StyleSheet.create?
+// TODO P3.1: 20+ itens com variedade de espécies, status, idades.
+// Inclua ao menos um com `local` e um com `fotoUri`.
+export const PETS: Pet[] = [
+  // ...três exemplos estão no arquivo; faltam 17+
+];
 ```
 
----
+### `src/lib/agrupar.ts`
 
-## Scaffold 2 — `src/components/card.tsx`
+```ts
+export type Secao = { title: string; data: Pet[] };
 
-Componente genérico — ele não sabe nada sobre `Pet`. Recebe `children` e uma prop opcional `destacado`.
+export function agrupar(pets: Pet[]): Secao[] {
+  // TODO P3.2: agrupar pelo critério que o grupo escolheu
+  // TODO P3.3: descartar grupos vazios
+  // TODO P3.4: a ordem dos grupos é uma DECISÃO. Comente qual e por quê.
+}
+
+export function filtrarPorNome(pets: Pet[], busca: string): Pet[] {
+  // TODO P3.5: busca case-insensitive. Busca vazia devolve tudo.
+}
+```
+
+### `src/components/item-pet.tsx`
 
 ```tsx
-import { type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { cores, espaco } from '../theme';
+export function ItemPet({ pet, onAlternar, onRemover, onRegistrar }: ItemPetProps) {
+  return (
+    <Pressable
+      // TODO P3.6: onPress → alternar; onLongPress → remover
+      // TODO P3.7: acessibilidade (accessibilityRole + accessibilityLabel)
+      // TODO P3.8: hitSlop e unstable_pressDelay — justifique cada valor
+      style={({ pressed }) => [
+        styles.item,
+        // TODO P3.9: feedback visual quando pressed
+      ]}
+    >
+      {/* TODO P3.10: <CardPet pet={pet} aoRegistrarPasseio={...} /> */}
+    </Pressable>
+  );
+}
+```
 
-type CardProps = {
-  children: ReactNode;
-  // TODO P2.5: prop opcional `destacado`
+### `src/components/lista-vazia.tsx`
+
+```tsx
+type ListaVaziaProps = {
+  // TODO P3.12: prop para distinguir "primeiro acesso" de "busca sem resultado"
 };
 
-export function Card({ children /* TODO P2.6 */ }: CardProps) {
-  // TODO P2.7: array de estilos — base sempre, variante só quando destacado
-  return <View style={styles.card}>{children}</View>;
+export function ListaVazia(/* TODO P3.12 */) {
+  // TODO P3.13: dois textos diferentes. O da busca menciona o termo procurado.
 }
-
-const styles = StyleSheet.create({
-  card: {
-    // TODO P2.8: padding, borderRadius, backgroundColor — tudo dos tokens
-    // TODO P2.9: boxShadow + gap
-  },
-  cardDestacado: {
-    // TODO P2.10: o que muda no destaque?
-  },
-});
 ```
 
----
-
-## Scaffold 3 — `src/components/card-pet.tsx`
-
-Usa o `Card` reutilizável e os tipos do domínio. A ação "Registrar passeio" vem das props — o card não sabe o que fazer, só avisa que o toque aconteceu.
+### `src/screens/tela-registro.tsx`
 
 ```tsx
-import { StyleSheet, Text, View } from 'react-native';
-import { type Pet, rotuloEspecie, rotuloStatusPasseio } from '../types/pet';
-import { cores, espaco, tipografia } from '../theme';
-import { Card } from './card';
+// CONTRATO DE TRÊS TEMPOS — preencha em cada bloco de sensor:
+//   1. PEDIR   → ______________________________
+//   2. LER     → ______________________________
+//   3. PARAR   → ______________________________
 
-// TODO P2.11: tipe as props (pet: Pet, aoRegistrarPasseio: () => void)
-type CardPetProps = { /* ... */ };
-
-export function CardPet({ /* TODO P2.12 */ }: CardPetProps) {
-  return (
-    <Card>
-      {/* TODO P2.13: nome do pet */}
-      {/* TODO P2.14: linha com espécie e status, um em cada ponta */}
-      {/* TODO P2.15: idade em meses */}
-      {/* TODO P2.16: Text com onPress para "Registrar passeio" */}
-    </Card>
-  );
+export function TelaRegistro({ pet, onSalvar, onCancelar }: TelaRegistroProps) {
+  // TODO P3.16–P3.17: hook de permissão + ref da câmera via useState
+  // TODO P3.18: obterLocalizacao() — pedir permissão, tratar 3 cenários, ler posição
+  // TODO P3.19–P3.20: abrirCamera() + tirarFoto() — pedir permissão, capturar
+  // TODO P3.21: 5 mensagens de erro distintas
+  // TODO P3.22: contrato de 3 tempos preenchido
+  // TODO P3.23–P3.24: salvar + degradação graciosa
 }
-
-const styles = StyleSheet.create({
-  linha: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    // TODO P2.17: marginTop com token
-  },
-  botao: {
-    // TODO P2.18: marginTop, fontWeight, color — tudo dos tokens
-  },
-});
 ```
 
----
-
-## Scaffold 4 — `App.tsx`
-
-A tela principal. Usa `EstadoTela<Pet>` no state do React e um `switch` exaustivo (sem `default`) para renderizar cada variante.
+### `App.tsx`
 
 ```tsx
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { CardPet } from './src/components/card-pet';
-import { buscarPetEmDestaque } from './src/services/pet-service';
-import { type EstadoTela, type Pet } from './src/types/pet';
-import { cores, espaco } from './src/theme';
-
 export default function App() {
-  const [estado, setEstado] = useState<EstadoTela<Pet>>({ tipo: 'carregando' });
-
-  const carregar = useCallback(async () => {
-    // TODO P2.19: carregando → buscar → sucesso ou erro
-  }, []);
-
-  useEffect(() => { carregar(); }, [carregar]);
-
-  function registrarPasseio() {
-    // TODO P2.20: só se estado.tipo === 'sucesso'. Atualize statusPasseio.
-  }
-
-  switch (estado.tipo) {
-    case 'carregando':
-      return (
-        <View style={styles.centro}>
-          {/* TODO P2.21: ActivityIndicator com color do token */}
-          <ActivityIndicator size="large" />
-        </View>
-      );
-    case 'sucesso':
-      return (
-        <View style={styles.container}>
-          {/* TODO P2.22: <CardPet pet={estado.dados} aoRegistrarPasseio={registrarPasseio} /> */}
-        </View>
-      );
-    case 'erro':
-      return (
-        <View style={styles.centro}>
-          {/* TODO P2.23: mensagem + Text com onPress para tentar de novo */}
-        </View>
-      );
-  }
+  // TODO P3.28: estados (pets, busca, atualizando, petRegistrando)
+  // TODO P3.29: alternarStatus — imutável
+  // TODO P3.30: removerPet — imutável
+  // TODO P3.31: recarregar — volta ao mock
+  // TODO P3.32: handleRegistro — recebe local + fotoUri da TelaRegistro
+  // TODO P3.33: condicional — petRegistrando não é null → TelaRegistro
+  // TODO P3.34: secoes = agrupar(filtrarPorNome(pets, busca))
+  // TODO P3.35: SectionList completo (renderItem, renderSectionHeader, empty, refresh)
+  // TODO P3.36: TextInput de busca no ListHeaderComponent
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 48 /* TODO: padding e backgroundColor dos tokens */ },
-  centro:    { flex: 1, alignItems: 'center', justifyContent: 'center' /* TODO: backgroundColor */ },
-});
 ```
-
----
-
-## Scaffold 5 — `src/screens/pet-form.tsx`
-
-Formulário dentro de um `ScrollView`. Inputs controlados, `Switch`, `Button` desabilitado quando o nome está vazio.
-
-```tsx
-import { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
-import { cores, espaco, tipografia } from '../theme';
-
-export default function PetForm() {
-  const [nome, setNome] = useState('');
-  const [raca, setRaca] = useState('');
-  const [alertaVacina, setAlertaVacina] = useState(false);
-
-  // TODO P2.24: substitua `true` por nome.trim() === ''
-  const nomeVazio = true;
-
-  return (
-    <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
-      <Text style={styles.rotulo}>Nome do pet</Text>
-      {/* TODO P2.26: value + onChangeText */}
-      {/* TODO P2.27: array de estilos com inputInvalido quando nomeVazio */}
-      <TextInput style={styles.input} placeholder="Ex: Rex" />
-
-      <Text style={styles.rotulo}>Raça</Text>
-      {/* TODO P2.28: input controlado */}
-      <TextInput style={styles.input} placeholder="Ex: Golden Retriever" />
-
-      <View style={styles.linha}>
-        <Text style={styles.rotulo}>Alerta de vacina</Text>
-        {/* TODO P2.29: Switch controlado (value + onValueChange) */}
-        <Switch />
-      </View>
-
-      <View style={styles.areaBotao}>
-        {/* TODO P2.30: disabled={nomeVazio} */}
-        {/* TODO P2.31: color={cores.primaria} */}
-        <Button title="Salvar" onPress={() => {}} />
-      </View>
-    </ScrollView>
-  );
-}
-
-const styles = StyleSheet.create({
-  tela:         { flex: 1 /* TODO P2.32: backgroundColor */ },
-  conteudo:     { /* TODO P2.33: padding e gap dos tokens */ },
-  input:        { borderWidth: 1 /* TODO P2.34: borderColor, borderRadius, padding, fontSize */ },
-  inputInvalido:{ /* TODO P2.35: só o que muda — ex: borderColor: cores.erro */ },
-  linha:        { /* TODO P2.36: row, space-between, center */ },
-  rotulo:       { /* TODO P2.37: tipografia */ },
-  areaBotao:    { borderRadius: 8, overflow: 'hidden' /* TODO P2.38: marginTop do token */ },
-});
-```
-
-> **Para testar o formulário** sem navegação entre telas: troque temporariamente o componente renderizado em `App.tsx` por `PetForm` e depois devolva.
-
----
-
-## Como testar o estado de erro
-
-Troque `SIMULAR_ERRO` para `true` em `src/services/pet-service.ts`, confira a tela de erro e o botão "Tentar novamente", e devolva a constante para `false` antes de entregar — mas **deixe a constante no código**.
-
----
-
-## O que entregar
-
-1. Os cinco arquivos acima, com todos os `TODO` resolvidos e **removidos**.
-2. Os **três estados** funcionando na tela principal: carregando, sucesso e erro.
-3. A ação **"Registrar passeio"** alterando o estado local (o status do pet muda na tela).
-4. O **formulário** funcional: inputs controlados, switch, botão desabilitado quando o nome está vazio, pelo menos um estilo condicional.
-5. O **sistema de tokens** (`theme.ts`) usado de fato em todos os componentes — nenhum hex ou número mágico nos componentes.
-6. Um `README.md` complementando o do repositório com:
-   - **Uma decisão de modelagem** que você tomou e o motivo (ex.: por que `type` e não `interface`, por que esse conjunto de status).
-   - **Uma decisão de organização de estilo** que você tomou e o motivo (ex.: por que tal estilo virou token e tal outro ficou local).
-
----
 
 ## Restrições (é aqui que a nota se decide)
 
-- ❌ Nenhum `JSX.Element` como tipo de retorno
-- ❌ Nenhum `as const` dentro de `StyleSheet.create`
-- ❌ Nenhum `margin` usado para espaçar irmãos (use `gap`)
-- ❌ Nenhum quarteto `shadowColor`/`shadowOffset`/`shadowOpacity`/`shadowRadius` (use `boxShadow`)
-- ❌ Nenhum componente fora dos sete permitidos + `StyleSheet`
-- ❌ Nenhum `any`
-- ❌ Nenhuma cor ou espaçamento em hex/número mágico dentro de componentes — tudo vem do `theme.ts`
-- ❌ Nenhum `as` sem justificativa em comentário
+**Listas:**
+- **Nenhuma `ScrollView` envolvendo a lista.** Use `ListHeaderComponent` / `ListFooterComponent`.
+- **Nenhuma mutação de estado.** Toda mudança cria array novo.
+- **Nenhum `<Button>` nem `<Text onPress>` sobrando** onde o `Pressable` é a resposta.
+- **Nenhum `margin` para espaçar itens de lista.**
+- **O agrupamento e o filtro moram fora do componente de tela**, em `src/lib/`.
+- **Mínimo de 20 itens no mock.**
 
----
+**Sensores:**
+- **Sem `useEffect`, `useRef`** para sensores. Os hooks de permissão das bibliotecas (`useCameraPermissions`) são permitidos.
+- **Sem navegação.** A tela de registro aparece por condicional com `useState`.
+- **Sem mapa.** A coordenada é texto.
+- **Sem salvar na galeria** e **sem escolher foto do rolo**.
+- **Sem rede.** A foto vive no cache.
+- **Se abrir uma torneira (`addListener`/`watchPositionAsync`), tem que existir botão para fechar.** E o README declara: *"esta assinatura não é encerrada ao sair da tela, porque a ferramenta para isso é assunto da Aula 6"*.
+
+**Geral:**
+- **Zero `any`.**
+- **Nenhum hex ou número mágico dentro de componentes** — tudo vem do `theme.ts`.
 
 ## Critérios de avaliação
 
 | Critério | Peso | O que se espera |
 |---|---|---|
-| **Tokens bem desenhados** | 15% | São valores, não layouts; escala de espaço coerente; usados em todos os componentes |
-| **Uso correto de Flexbox** | 15% | Eixo correto, `flex: 1` onde necessário, `gap` no lugar de `margin` |
-| **Os três estados funcionam** | 15% | Loading, sucesso e erro visíveis e testáveis |
-| **Componente Card reutilizável** | 15% | Props tipadas, `destacado` via array de estilos, sem valores mágicos |
-| **Formulário funcional** | 15% | Inputs controlados, Switch, contentContainerStyle, botão desabilitado |
-| **Ação de registrar passeio** | 10% | Funciona e atualiza o estado local corretamente |
-| **Respeito às restrições** | 10% | Cada item da lista acima que aparecer no código desconta |
-| **README** | 5% | Decisões explicadas com motivo real |
+| **Correção do toque** | 15% | Ação em `onPress`; feedback via `pressed`; `onLongPress` funcionando |
+| **Correção da lista** | 15% | `SectionList` bem configurada; chave estável; sem `ScrollView` envolvendo |
+| **Os quatro estados** | 15% | Todos implementados; o vazio de busca não repete o texto do primeiro acesso |
+| **Imutabilidade** | 10% | Nenhuma mutação; lista atualiza sozinha |
+| **Contrato de três tempos** | 10% | Pede, lê, para. Comentário-checklist preenchido em cada arquivo de sensor |
+| **Estados de falha distintos** | 10% | As cinco situações, cada uma com mensagem e orientação ao usuário |
+| **Uso correto das APIs de sensor** | 10% | `Accuracy` justificada; `contentFit` explícito; import do `Image` correto |
+| **Degradação graciosa** | 5% | Negando tudo, o app funciona |
+| **Separação de responsabilidade** | 5% | Agrupar e filtrar em `lib/`; sensor em `tela-registro` |
+| **README** | 5% | Decisões explicadas com critério |
 
 ## O que **não** é avaliado
 
-Beleza visual, animações, navegação entre telas, persistência, listas. Foque na modelagem de estado, nos três estados da tela, no formulário e na consistência do estilo.
+- Beleza da tela além do que a Prática 2 já cobrou.
+- Desempenho medido. Com 20 itens não há o que otimizar.
+- Animação de qualquer tipo.
+- Quantidade de sensores usados. Usar bem GPS e câmera vale mais que usar mal quatro.
 
 ---
 
-# Prática 2.2 — Auditoria de estilo em código alheio
+# Prática 3.2 — Auditoria de lista em código alheio
 
-**Nível:** ⭐⭐ · **Tempo estimado:** 1 h · **Entrega:** individual · **Formato:** `docs/pratica-2.2-auditoria-estilo.md`
+**Nível:** ⭐⭐ · **Tempo:** ~1 h · **Entrega:** arquivo `docs/pratica-3.2-auditoria-lista.md`
 
 ## Contexto
 
-Você entrou num time que mantém um app React Native de dois anos atrás. Seu tech lead pede uma **auditoria da camada de estilo** antes de vocês começarem a mexer.
-
-Abaixo está um trecho representativo do código que você encontrou.
+Você entrou num time e pegou esta tela. Ela **funciona** — em desenvolvimento, com o mock de 8 itens. Em produção são 4 000, e o time reclama que "a tela de pets trava e às vezes não atualiza".
 
 ```tsx
-import React from 'react';
-import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
-import globalStyles from '../styles/globalStyles';
+import { useState } from 'react';
+import { ScrollView, FlatList, TextInput, Text, View, StyleSheet } from 'react-native';
 
-export default function TelaResumo(props: any): JSX.Element {
-  const [aberto, setAberto] = React.useState(false);
+import { PETS } from '../mock';
+
+export default function TelaPets() {
+  const [pets, setPets] = useState(PETS);
+  const [busca, setBusca] = useState('');
+
+  const visiveis = pets.filter((p) => p.nome.includes(busca));
+
+  function registrar(id) {
+    const alvo = pets.find((p) => p.id === id);
+    alvo.statusPasseio = 'concluido';
+    setPets(pets);
+  }
 
   return (
-    <ScrollView style={{ padding: 20, alignItems: 'center' }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-        <Text style={{ fontSize: 18, color: '#333', fontWeight: 'bold' }}>Resumo</Text>
-        <Text style={{ fontSize: 18, color: '#333' }}>{props.total}</Text>
-      </View>
+    <ScrollView style={styles.tela}>
+      <Text style={styles.titulo}>Meus pets</Text>
 
-      <View style={globalStyles.container}>
-        <Text style={{ fontSize: 14, color: '#666' }}>{props.nome}</Text>
-      </View>
-
-      <View style={[globalStyles.container, styles.item]}>
-        <Text style={{ fontSize: 14, color: '#666', fontSize: 16 }}>{props.detalhe}</Text>
-      </View>
-
-      <Button
-        style={globalStyles.button}
-        title={aberto ? 'Fechar' : 'Abrir'}
-        onPress={() => setAberto(!aberto)}
+      <FlatList
+        data={visiveis}
+        ListHeaderComponent={() => (
+          <TextInput
+            style={styles.busca}
+            value={busca}
+            onChangeText={setBusca}
+            placeholder="buscar"
+          />
+        )}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <View style={styles.item}>
+            <Text style={styles.itemNome}>{item.nome}</Text>
+            <Text style={styles.itemAcao} onPress={() => registrar(item.id)}>
+              registrar passeio
+            </Text>
+          </View>
+        )}
+        removeClippedSubviews={true}
+        windowSize={50}
+        initialNumToRender={100}
       />
+
+      <Text style={styles.rodape}>Total: {visiveis.length}</Text>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  item: {
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-});
-```
-
-```tsx
-// ../styles/globalStyles.ts
-import { StyleSheet } from 'react-native';
-
-export default StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  text: { fontSize: 18, color: '#333' },
-  button: { backgroundColor: 'blue', padding: 10, borderRadius: 5, alignItems: 'center' },
+  tela: { flex: 1, padding: 16 },
+  titulo: { fontSize: 22, fontWeight: '600' },
+  busca: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 12 },
+  item: { padding: 14, backgroundColor: '#fff', borderRadius: 10, marginBottom: 8 },
+  itemNome: { fontSize: 16 },
+  itemAcao: { color: '#FF6002', marginTop: 4 },
+  rodape: { textAlign: 'center', padding: 16, color: '#6b6459' },
 });
 ```
 
 ## O que entregar
 
-O template está em `docs/pratica-2.2-auditoria-estilo.md`. Preencha:
+O template está em `docs/pratica-3.2-auditoria-lista.md`. **Não reescreva o arquivo inteiro** — o exercício é diagnosticar e priorizar, não digitar.
 
-1. **Lista de problemas encontrados** — pelo menos **oito**, cada um com: o que está errado, consequência **concreta**, e correção. "É feio" não é consequência concreta.
-2. **Um problema arquitetural** — algo que não se resolve trocando uma linha. Explique por que a **estrutura** o produz.
-3. **O `globalStyles.ts` reescrito** como `theme.ts` de tokens — com explicação do que você removeu e por quê.
-4. **Ordem de prioridade da refatoração** — você tem meio dia. Justifique por **risco** e **retorno**, não pela ordem no arquivo.
-5. **Um problema que você decidiu NÃO corrigir**, e por quê.
+## Critérios de avaliação
 
-### Critérios de avaliação
+| Critério | Peso | O que é "bom" |
+|---|---|---|
+| **Cobertura** | 30% | 8+ problemas reais; sem "problemas" que são só preferência de estilo |
+| **Sintoma, não jargão** | 20% | Cada item diz o que o **usuário** vê, não só o que o código faz |
+| **O problema arquitetural** | 20% | Identificou o aninhamento e explicou por que ele anula a virtualização |
+| **Os ajustes de desempenho** | 15% | Defaults corretos e a percepção de que foram mexidos sem medir |
+| **Priorização** | 15% | Ordem justificada por risco e retorno |
+
+---
+
+# Prática 3.3 — Auditoria de permissões em código alheio
+
+**Nível:** ⭐⭐⭐ · **Tempo:** ~1h30 · **Entrega:** arquivo `docs/pratica-3.3-auditoria-permissoes.md`
+
+## Contexto
+
+Você entrou num time e recebeu esta tela para dar manutenção. Ela **funciona no aparelho de quem escreveu**, e é justamente por isso que ninguém percebeu os problemas.
+
+```tsx
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View, Image, FlatList } from 'react-native';
+import * as Location from 'expo-location';
+import { Accelerometer } from 'expo-sensors';
+
+interface Registro {
+  id: string;
+  nome: string;
+  fotoUrl: string;
+  lat: number;
+  lon: number;
+}
+
+let jaPediuPermissao = false;
+
+export default function TelaPasseio() {
+  const [registros, setRegistros] = useState<Registro[]>([]);
+  const [passos, setPassos] = useState(0);
+  const [erro, setErro] = useState('');
+
+  async function iniciarPasseio() {
+    if (!jaPediuPermissao) {
+      await Location.requestForegroundPermissionsAsync();
+      jaPediuPermissao = true;
+    }
+
+    const posicao = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.BestForNavigation,
+    });
+
+    await Location.watchPositionAsync({ accuracy: Location.Accuracy.Highest }, async (p) => {
+      const endereco = await Location.reverseGeocodeAsync(p.coords);
+      setErro('');
+      setRegistros((antigos) => [
+        ...antigos,
+        {
+          id: String(antigos.length),
+          nome: endereco[0]?.street ?? 'sem rua',
+          fotoUrl: 'https://picsum.photos/seed/passeio/600/400',
+          lat: p.coords.latitude,
+          lon: p.coords.longitude,
+        },
+      ]);
+    });
+
+    Accelerometer.setUpdateInterval(16);
+    Accelerometer.addListener(({ x }) => {
+      if (x > 1.5) setPassos((n) => n + 1);
+    });
+
+    if (!posicao) setErro('Erro ao obter localização');
+  }
+
+  return (
+    <View style={estilos.tela}>
+      <Pressable onPress={iniciarPasseio} style={estilos.botao}>
+        <Text style={estilos.textoBotao}>Iniciar passeio</Text>
+      </Pressable>
+
+      <Text>Passos: {passos}</Text>
+      {erro !== '' && <Text style={estilos.erro}>{erro}</Text>}
+
+      <FlatList
+        data={registros}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={estilos.card}>
+            <Image source={{ uri: item.fotoUrl }} style={estilos.foto} resizeMode="cover" />
+            <Text>
+              {item.nome} — {item.lat}, {item.lon}
+            </Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  tela: { flex: 1, padding: 16, gap: 12 },
+  botao: { backgroundColor: '#f26522', padding: 14, borderRadius: 10, alignItems: 'center' },
+  textoBotao: { color: '#fff', fontWeight: '700' },
+  erro: { color: '#b00020' },
+  card: { gap: 8, paddingVertical: 8 },
+  foto: { width: '100%', height: 140 },
+});
+```
+
+## O que entregar
+
+O template está em `docs/pratica-3.3-auditoria-permissoes.md`. **Não é para consertar o código** — é para diagnosticar, priorizar e justificar.
+
+## Critérios de avaliação
 
 | Critério | Peso | O que se espera |
 |---|---|---|
-| **Cobertura dos problemas** | 30% | Pelo menos 8, com correção correta |
-| **Problema arquitetural** | 25% | Percebeu o acoplamento, não só erros de sintaxe |
-| **`theme.ts` reescrito** | 20% | Tokens são valores; explicou o que saiu e por quê |
-| **Priorização por risco/retorno** | 15% | Não é lista na ordem do arquivo |
-| **O item que ficou de fora** | 10% | Escolha defensável |
-
-> **Não existe uma resposta única.** O que é avaliado é a qualidade do raciocínio de engenharia.
+| **Cobertura** | 30% | Problemas de permissão, vazamentos, sensor errado e defeitos de imagem |
+| **Sintoma antes da causa** | 20% | Cada problema começa pelo que **o usuário sente** |
+| **Priorização justificada** | 20% | A ordem tem critério explícito e defensável |
+| **Precisão técnica** | 20% | Correções corretas, nomes atuais das APIs |
+| **O que não corrigir** | 10% | A seção 7 existe e tem justificativa real |
 
 ---
 
-# Prática 2.3 — Flexbox Froggy + relatório curto *(opcional)*
+# Prática 3.4 — O comedouro nivelado *(opcional, bônus)*
 
-**Nível:** ⭐ · **Tempo estimado:** 30 min
+**Nível:** ⭐⭐ · **Tempo:** 45 min
 
-Complete os 24 níveis do [Flexbox Froggy](https://flexboxfroggy.com/). Depois entregue **meia página**:
+Comedouro torto derrama água e faz o pet comer numa postura ruim. Faça uma ferramenta de nível: o app mostra uma bolha que só fica **verde e centralizada** quando o telefone, apoiado sobre o comedouro, está perfeitamente plano.
 
-- **Três diferenças** que você notou entre o Flexbox do jogo (CSS) e o do React Native.
-- **Um nível** que exigiria código diferente em React Native, com os dois códigos lado a lado.
+- Use o **acelerômetro**, não o giroscópio. Saiba dizer por quê.
+- A bolha se move com `x` e `y`; o `StyleSheet` e o Flexbox são os da Prática 2. **Sem animação.**
+- Escolha o intervalo de atualização **conscientemente** e justifique em um comentário.
+- Um botão liga, outro desliga.
 
-**Por que vale a pena:** o jogo constrói intuição de eixo muito rápido. Mas ele é CSS — e transferir sem perceber as diferenças é como aprender espanhol e falar português achando que é o mesmo idioma.
-
----
-
-# Equivalência de domínio
-
-Use como **último recurso**. O ponto da prática é decidir de novo, não traduzir.
-
-| `Habito` *(material da aula)* | `Pet` *(seu domínio)* |
-|---|---|
-| `Habito` | `Pet` |
-| `CardHabito` | `CardPet` |
-| `titulo: string` | `nome: string` |
-| `categoria: CategoriaHabito` | `especie: EspeciePet` |
-| `frequencia: FrequenciaHabito` | `porte: PortePet` |
-| `status: StatusHabito` (`'pendente' \| 'concluido' \| 'pulado'`) | `statusPasseio: StatusPasseio` (`'pendente' \| 'concluido' \| 'cancelado'`) |
-| `streakDias: number` | `idadeMeses: number` |
-| `rotuloStatus()` | `rotuloStatusPasseio()` |
-| `buscarHabitoDoDia()` | `buscarPetEmDestaque()` |
-| "Hábito do dia" | "Pet em destaque" |
-| "Marcar concluído hoje" | "Registrar passeio" |
+**Critério:** funciona, não engasga, e o comentário sobre o intervalo mostra que você entendeu a troca entre suavidade e número de renderizações.
 
 ---
 
 ## Resumo de tempos
 
-| Parte                             | Onde | Tempo   |
-| --------------------------------- | ---- | ------- |
-| Prática 2.1                       | Casa | 4–5 h   |
-| Prática 2.2                       | Casa | ~1 h    |
-| Prática 2.3 *(opcional)*          | Casa | ~30 min |
+| Parte                                | Onde | Tempo   |
+| ------------------------------------ | ---- | ------- |
+| Prática 3.1 — Lista + registro       | Casa | 5–6 h   |
+| Prática 3.2 — Auditoria de lista     | Casa | ~1 h    |
+| Prática 3.3 — Auditoria de permissões| Casa | ~1h30   |
+| Prática 3.4 — Comedouro *(opcional)* | Casa | ~45 min |

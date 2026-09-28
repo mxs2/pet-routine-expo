@@ -1,110 +1,165 @@
 // ============================================================
-// Prática 2 — Tela do pet em destaque
+// Prática 3 — Tela principal: lista de pets + registro de passeio
 // Disciplina: Desenvolvimento Mobile (2026.2.DM) — CESAR School
 //
-// Esta tela mostra UMA única entidade em destaque, não uma lista.
-// Usa a união discriminada EstadoTela<Pet> para garantir que cada
-// estado (carregando, sucesso, erro) seja tratado de forma exaustiva.
+// Na Prática 2 esta tela mostrava um pet em destaque.
+// Agora mostra uma lista de verdade com SectionList, toque
+// interativo e registro de passeio com sensores.
 //
 // Restrições:
-//   • Nenhum `any` ou `as` desnecessário
-//   • switch sem `default` — a exaustividade é o ponto
-//   • Cores e espaçamentos vindos do theme.ts — nenhum hex solto
+//   • Nenhuma ScrollView envolvendo a lista
+//   • Nenhuma mutação de estado — toda mudança cria array novo
+//   • Agrupamento e filtro moram em src/lib/, não aqui
+//   • Sem useEffect para sensores (cleanup é assunto da Aula 6)
 // ============================================================
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { SectionList, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { CardPet } from './src/components/card-pet';
-import { buscarPetEmDestaque } from './src/services/pet-service';
-import { type EstadoTela, type Pet } from './src/types/pet';
-import { cores, espaco } from './src/theme';
+import type { Pet } from './src/types/pet';
+import { PETS } from './src/data/pets';
+import { agrupar, filtrarPorNome, type Secao } from './src/lib/agrupar';
+import { ItemPet } from './src/components/item-pet';
+import { ListaVazia } from './src/components/lista-vazia';
+import { TelaRegistro } from './src/screens/tela-registro';
+import { cores, espaco, tipografia } from './src/theme';
 
 export default function App() {
-  const [estado, setEstado] = useState<EstadoTela<Pet>>({ tipo: 'carregando' });
+  // TODO P3.28: declare os quatro estados da tela:
+  //   const [pets, setPets] = useState<Pet[]>(PETS);
+  //   const [busca, setBusca] = useState('');
+  //   const [atualizando, setAtualizando] = useState(false);
+  //   const [petRegistrando, setPetRegistrando] = useState<string | null>(null);
+  //   petRegistrando guarda o ID do pet sendo registrado, ou null para a lista.
 
-  const carregar = useCallback(async () => {
-    // TODO P2.19: implemente o carregamento do pet em destaque.
-    //   1. Volte para o estado 'carregando': setEstado({ tipo: 'carregando' })
-    //   2. Chame buscarPetEmDestaque() dentro de um try/catch
-    //   3. Sucesso → setEstado({ tipo: 'sucesso', dados: pet })
-    //   4. Erro → setEstado({ tipo: 'erro', mensagem: ... })
-    //   Lembre: o catch recebe `unknown`, não `Error`.
-    //   Use: erro instanceof Error ? erro.message : 'Erro desconhecido'
-    setEstado({ tipo: 'carregando' });
-    try {
-      const pet = await buscarPetEmDestaque();
-      setEstado({ tipo: 'sucesso', dados: pet });
-    } catch (erro) {
-      setEstado({ tipo: 'erro', mensagem: erro instanceof Error ? erro.message : 'Erro desconhecido' });
-    }
-  }, []);
+  // TODO P3.29: alternar status do passeio — array novo, objeto novo. Nada de mutação.
+  //   function alternarStatus(id: string) {
+  //     setPets(anteriores =>
+  //       anteriores.map(p =>
+  //         p.id === id
+  //           ? { ...p, statusPasseio: p.statusPasseio === 'concluido' ? 'pendente' : 'concluido' }
+  //           : p
+  //       )
+  //     );
+  //   }
 
-  useEffect(() => {
-    carregar();
-  }, [carregar]);
+  // TODO P3.30: remover pet — array novo via filter.
+  //   function removerPet(id: string) {
+  //     setPets(anteriores => anteriores.filter(p => p.id !== id));
+  //   }
 
-  function registrarPasseio() {
-    // TODO P2.20: só faz sentido se estado.tipo for 'sucesso'.
-    //   Cheque o tipo ANTES de acessar estado.dados.
-    //   Atualize o statusPasseio para 'concluido' (só em memória):
-    //     setEstado({
-    //       tipo: 'sucesso',
-    //       dados: { ...estado.dados, statusPasseio: 'concluido' },
-    //     });
-    if (estado.tipo === 'sucesso') {
-      setEstado({
-        tipo: 'sucesso',
-        dados: { ...estado.dados, statusPasseio: 'concluido' },
-      });
-    }
-  }
+  // TODO P3.31: recarregar — simula refresh, volta ao mock e limpa a busca.
+  //   async function recarregar() {
+  //     setAtualizando(true);
+  //     await new Promise(r => setTimeout(r, 800));
+  //     setPets(PETS);
+  //     setBusca('');
+  //     setAtualizando(false);
+  //   }
 
-  // Cada case retorna a tela inteira — sem `default`, sem break.
-  switch (estado.tipo) {
-    case 'carregando':
-      return (
-        <View style={styles.centro}>
-          {/* TODO P2.21: use cores.primaria como color do ActivityIndicator */}
-          <ActivityIndicator size="large" color={cores.primaria} />
-        </View>
-      );
+  // TODO P3.32: receber o registro de passeio da TelaRegistro.
+  //   function handleRegistro(local?: Pet['local'], fotoUri?: string) {
+  //     if (!petRegistrando) return;
+  //     setPets(anteriores =>
+  //       anteriores.map(p =>
+  //         p.id === petRegistrando
+  //           ? { ...p, statusPasseio: 'concluido' as const, local, fotoUri }
+  //           : p
+  //       )
+  //     );
+  //     setPetRegistrando(null);
+  //   }
 
-    case 'sucesso':
-      return (
-        <View style={styles.container}>
-          {/* TODO P2.22: renderize o CardPet com:
-                - pet={estado.dados}
-                - aoRegistrarPasseio={registrarPasseio} */}
-          <CardPet pet={estado.dados} aoRegistrarPasseio={registrarPasseio} />
-        </View>
-      );
+  // TODO P3.33: renderização condicional — quando petRegistrando não é null,
+  //   mostre a TelaRegistro em vez da lista.
+  //   const petAlvo = pets.find(p => p.id === petRegistrando);
+  //   if (petAlvo) {
+  //     return (
+  //       <TelaRegistro
+  //         pet={petAlvo}
+  //         onSalvar={handleRegistro}
+  //         onCancelar={() => setPetRegistrando(null)}
+  //       />
+  //     );
+  //   }
 
-    case 'erro':
-      return (
-        <View style={styles.centro}>
-          {/* TODO P2.23: mostre a mensagem de erro e um botão para tentar de novo.
-                - Um Text com estado.mensagem
-                - Um Text com onPress={carregar}: "Tentar novamente" */}
-          <Text style={{ color: cores.erro, marginBottom: espaco.md }}>{estado.mensagem}</Text>
-          <Text style={{ color: cores.primaria, fontWeight: 'bold' }} onPress={carregar}>Tentar novamente</Text>
-        </View>
-      );
-  }
+  // TODO P3.34: seções da lista — filtrar E DEPOIS agrupar. A ordem importa.
+  //   const secoes = agrupar(filtrarPorNome(pets, busca));
+  //   Explique no README por que filtrar antes de agrupar.
+
+  return (
+    <View style={styles.tela}>
+      <SectionList<Pet, Secao>
+        sections={/* TODO P3.34 */ [] as Secao[]}
+        keyExtractor={(item) => item.id}
+        // TODO P3.35: configure o SectionList completo:
+        //
+        //   renderItem — use ItemPet com as callbacks:
+        //     renderItem={({ item }) => (
+        //       <ItemPet
+        //         pet={item}
+        //         onAlternar={alternarStatus}
+        //         onRemover={removerPet}
+        //         onRegistrar={(id) => setPetRegistrando(id)}
+        //       />
+        //     )}
+        //     Nota: depende de estado local, então pode ficar inline.
+        //
+        //   renderSectionHeader — Text com o título da seção:
+        //     renderSectionHeader={({ section }) => (
+        //       <Text style={styles.cabecalhoSecao}>{section.title}</Text>
+        //     )}
+        //
+        //   ItemSeparatorComponent ou contentContainerStyle com gap
+        //
+        //   ListEmptyComponent — ListaVazia com o termo de busca:
+        //     ListEmptyComponent={<ListaVazia termoBusca={busca} />}
+        //
+        //   stickySectionHeadersEnabled={true}
+        //
+        //   refreshing={atualizando}
+        //   onRefresh={recarregar}
+        ListHeaderComponent={
+          <View style={styles.cabecalho}>
+            {/* TODO P3.36: TextInput de busca.
+                  value={busca}
+                  onChangeText={setBusca}
+                  placeholder="Buscar pet por nome..."
+                  style={styles.busca} */}
+          </View>
+        }
+        contentContainerStyle={styles.conteudo}
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  tela: {
     flex: 1,
     paddingTop: 48,
-    // TODO: padding e backgroundColor dos tokens (espaco e cores)
-    paddingHorizontal: espaco.md,
     backgroundColor: cores.fundo,
   },
-  centro: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // TODO: backgroundColor dos tokens (cores.fundo)
+  cabecalho: {
+    paddingHorizontal: espaco.md,
+    paddingBottom: espaco.sm,
+  },
+  conteudo: {
+    gap: espaco.sm,
+    paddingHorizontal: espaco.md,
+    paddingBottom: espaco.lg,
+  },
+  cabecalhoSecao: {
+    ...tipografia.titulo,
     backgroundColor: cores.fundo,
+    paddingVertical: espaco.sm,
+    paddingHorizontal: espaco.md,
+  },
+  busca: {
+    borderWidth: 1,
+    borderColor: cores.textoFraco,
+    borderRadius: espaco.sm,
+    padding: espaco.sm,
+    fontSize: tipografia.corpo.fontSize,
+    backgroundColor: cores.cartao,
   },
 });
