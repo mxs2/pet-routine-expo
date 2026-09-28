@@ -18,7 +18,13 @@ const ATRASO_MS = 1000; // para o estado de carregando ser visível
 // TODO P1.2.1 — declare o pet mockado. Ele precisa satisfazer `Pet` inteiro;
 //   não use `as` para escapar de campos faltando.
 const MOCK: Pet = {
-  /* … */
+  id: 'pet-123',
+  nome: 'Rex',
+  especie: 'cachorro',
+  porte: 'medio',
+  statusPasseio: 'pendente',
+  idadeMeses: 24,
+  criadoEm: new Date('2025-01-01T00:00:00Z'),
 };
 
 /**
@@ -28,12 +34,16 @@ const MOCK: Pet = {
 export async function buscarPetDoUsuario(): Promise<Pet> {
   // TODO P1.2.2 — espere ATRASO_MS antes de responder.
   //   Dica: `await new Promise((r) => setTimeout(r, ATRASO_MS));`
+  await new Promise((r) => setTimeout(r, ATRASO_MS));
 
   // TODO P1.2.3 — se SIMULAR_ERRO for true, lance um Error com mensagem legível
   //   para o usuário final — não um stack trace.
+  if (SIMULAR_ERRO) {
+    throw new Error('Não foi possível carregar os dados do pet. Verifique sua conexão e tente novamente.');
+  }
 
   // TODO P1.2.4 — devolva o MOCK.
-  /* … */
+  return MOCK;
 }
 
 /**
@@ -43,7 +53,7 @@ export async function buscarPetDoUsuario(): Promise<Pet> {
 export async function registrarPasseio(pet: Pet): Promise<Pet> {
   // TODO P1.2.5 — devolva uma CÓPIA do pet com statusPasseio 'concluido'.
   //   Não mute o objeto recebido.
-  /* … */
+  return { ...pet, statusPasseio: 'concluido' };
 }
 
 // Referenciados só depois que você resolver os TODOs acima; os `void`

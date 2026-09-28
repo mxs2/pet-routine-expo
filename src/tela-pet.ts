@@ -11,11 +11,11 @@
 //   uma linha cada, antes de entregar.
 //
 //   1. Qual estado impossível a união discriminada torna não representável?
-//      R: ...
+//      R: Ter dados e erro ao mesmo tempo, ou estar carregando e já possuir dados.
 //   2. Por que `carregar()` captura a exceção em vez de deixá-la subir?
-//      R: ...
+//      R: Porque o erro deve ser tratado como mais um estado visual na UI, evitando crashs e exibindo feedback ao usuário.
 //   3. Uma decisão de modelagem que você tomou na Prática 1 e o motivo.
-//      R: ...
+//      R: Tipar `criadoEm` como `Date` em vez de `string`, para facilitar cálculos de tempo (ex: idade) sem precisar de parse repetido.
 // ------------------------------------------------------------
 
 import type { Pet } from './types/pet';
@@ -28,7 +28,10 @@ import { buscarPetDoUsuario } from './services/petService';
 //   'sucesso'     → dados: T
 //   'erro'        → mensagem: string
 // ============================================================
-export type EstadoTela<T> = /* … */ never;
+export type EstadoTela<T> =
+  | { tipo: 'carregando' }
+  | { tipo: 'sucesso'; dados: T }
+  | { tipo: 'erro'; mensagem: string };
 
 // ============================================================
 // TODO P1.2.7 — devolva o texto que a tela mostraria em cada estado.
@@ -39,7 +42,14 @@ export type EstadoTela<T> = /* … */ never;
 //     erro       → `Erro: ${mensagem}`
 // ============================================================
 export function descreverTela(estado: EstadoTela<Pet>): string {
-  /* … */
+  switch (estado.tipo) {
+    case 'carregando':
+      return 'Carregando…';
+    case 'sucesso':
+      return `${estado.dados.nome} · ${rotuloEspecie(estado.dados.especie)} · ${rotuloStatusPasseio(estado.dados.statusPasseio)}`;
+    case 'erro':
+      return `Erro: ${estado.mensagem}`;
+  }
 }
 
 // ============================================================
@@ -49,7 +59,13 @@ export function descreverTela(estado: EstadoTela<Pet>): string {
 //   Lembre: em TypeScript o `catch` recebe `unknown`, não `Error`.
 // ============================================================
 export async function carregar(): Promise<EstadoTela<Pet>> {
-  /* … */
+  try {
+    const dados = await buscarPetDoUsuario();
+    return { tipo: 'sucesso', dados };
+  } catch (erro: unknown) {
+    const mensagem = erro instanceof Error ? erro.message : 'Erro desconhecido';
+    return { tipo: 'erro', mensagem };
+  }
 }
 
 // ============================================================
