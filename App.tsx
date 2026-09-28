@@ -30,6 +30,13 @@ export default function App() {
     //   4. Erro → setEstado({ tipo: 'erro', mensagem: ... })
     //   Lembre: o catch recebe `unknown`, não `Error`.
     //   Use: erro instanceof Error ? erro.message : 'Erro desconhecido'
+    setEstado({ tipo: 'carregando' });
+    try {
+      const pet = await buscarPetEmDestaque();
+      setEstado({ tipo: 'sucesso', dados: pet });
+    } catch (erro) {
+      setEstado({ tipo: 'erro', mensagem: erro instanceof Error ? erro.message : 'Erro desconhecido' });
+    }
   }, []);
 
   useEffect(() => {
@@ -44,6 +51,12 @@ export default function App() {
     //       tipo: 'sucesso',
     //       dados: { ...estado.dados, statusPasseio: 'concluido' },
     //     });
+    if (estado.tipo === 'sucesso') {
+      setEstado({
+        tipo: 'sucesso',
+        dados: { ...estado.dados, statusPasseio: 'concluido' },
+      });
+    }
   }
 
   // Cada case retorna a tela inteira — sem `default`, sem break.
@@ -52,7 +65,7 @@ export default function App() {
       return (
         <View style={styles.centro}>
           {/* TODO P2.21: use cores.primaria como color do ActivityIndicator */}
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={cores.primaria} />
         </View>
       );
 
@@ -62,6 +75,7 @@ export default function App() {
           {/* TODO P2.22: renderize o CardPet com:
                 - pet={estado.dados}
                 - aoRegistrarPasseio={registrarPasseio} */}
+          <CardPet pet={estado.dados} aoRegistrarPasseio={registrarPasseio} />
         </View>
       );
 
@@ -71,6 +85,8 @@ export default function App() {
           {/* TODO P2.23: mostre a mensagem de erro e um botão para tentar de novo.
                 - Um Text com estado.mensagem
                 - Um Text com onPress={carregar}: "Tentar novamente" */}
+          <Text style={{ color: cores.erro, marginBottom: espaco.md }}>{estado.mensagem}</Text>
+          <Text style={{ color: cores.primaria, fontWeight: 'bold' }} onPress={carregar}>Tentar novamente</Text>
         </View>
       );
   }
@@ -81,11 +97,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 48,
     // TODO: padding e backgroundColor dos tokens (espaco e cores)
+    paddingHorizontal: espaco.md,
+    backgroundColor: cores.fundo,
   },
   centro: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     // TODO: backgroundColor dos tokens (cores.fundo)
+    backgroundColor: cores.fundo,
   },
 });

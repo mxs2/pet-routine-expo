@@ -20,25 +20,34 @@ import { Card } from './card';
 //   - aoRegistrarPasseio: () => void
 type CardPetProps = {
   /* ... */
+  pet: Pet;
+  aoRegistrarPasseio: () => void;
 };
 
-export function CardPet({ /* TODO P2.12: desestruture as props */ }: CardPetProps) {
+export function CardPet({ /* TODO P2.12: desestruture as props */ pet, aoRegistrarPasseio }: CardPetProps) {
   return (
     <Card>
       {/* TODO P2.13: nome do pet (Text com estilo de título) */}
+      <Text style={tipografia.titulo}>{pet.nome}</Text>
 
       {/* TODO P2.14: uma View com flexDirection 'row' e justifyContent 'space-between'.
             Dentro dela, dois Text:
               - espécie à esquerda: rotuloEspecie(pet.especie)
               - status à direita: rotuloStatusPasseio(pet.statusPasseio) */}
+      <View style={styles.linha}>
+        <Text style={tipografia.corpo}>{rotuloEspecie(pet.especie)}</Text>
+        <Text style={tipografia.corpo}>{rotuloStatusPasseio(pet.statusPasseio)}</Text>
+      </View>
 
       {/* TODO P2.15: idade em meses (Text com estilo de legenda).
             Ex: "24 meses" */}
+      <Text style={tipografia.legenda}>{pet.idadeMeses} meses</Text>
 
       {/* TODO P2.16: um Text com onPress que chame aoRegistrarPasseio.
             Texto: "Registrar passeio".
             A ação vem das props — o card não sabe O QUE fazer,
             só avisa que o toque aconteceu. */}
+      <Text style={styles.botao} onPress={aoRegistrarPasseio}>Registrar passeio</Text>
     </Card>
   );
 }
@@ -48,9 +57,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     // TODO P2.17: use espaco para o marginTop
+    marginTop: espaco.sm,
   },
   botao: {
     // TODO P2.18: marginTop, fontWeight e color — tudo dos tokens.
     //   Dica: a cor do botão pode ser cores.primaria.
+    marginTop: espaco.md,
+    fontWeight: 'bold',
+    color: cores.primaria,
   },
 });
