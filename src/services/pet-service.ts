@@ -28,10 +28,10 @@ const MOCK: Pet = {
 };
 
 /**
- * Devolve UM pet — o do tutor logado. Assinatura propositalmente idêntica
+ * Devolve o pet em destaque. Assinatura propositalmente idêntica
  * à que uma chamada HTTP real teria, para a troca ser indolor.
  */
-export async function buscarPetDoUsuario(): Promise<Pet> {
+export async function buscarPetEmDestaque(): Promise<Pet> {
   // TODO P1.2.2 — espere ATRASO_MS antes de responder.
   //   Dica: `await new Promise((r) => setTimeout(r, ATRASO_MS));`
   await new Promise((r) => setTimeout(r, ATRASO_MS));

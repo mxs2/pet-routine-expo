@@ -1,31 +1,91 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-
-// TODO(Aula 1 — Ex. 3): este componente tem erros propositais de View/Text/StyleSheet
-// para você corrigir — ver exercises.md da Aula 2.
-// TODO(Aula 1 — Ex. 4 a 7): crie `src/types/pet.ts` com `Pet`, `StatusPasseio`,
-// `EspeciePet` e os utility types derivados (Pick/Omit/Partial).
-// TODO(Aula 2 — Ex. 6): modele o estado desta tela com `EstadoTela<Pet>`
-// (carregando | sucesso | erro) em vez de booleanos soltos.
+// ============================================================
+// Prática 2 — Tela do pet em destaque
+// Disciplina: Desenvolvimento Mobile (2026.2.DM) — CESAR School
 //
-// NOTA (Aula 1 — práticas): as Práticas 1 e 2 de `PRATICA.md` são TypeScript
-// puro e vivem em `src/` — não mexa nesta tela para resolvê-las. Elas produzem
-// exatamente os tipos (`Pet`, `EstadoTela<Pet>`) que os TODOs acima vão consumir
-// na Aula 2. Comece por `src/types/pet.ts`.
+// Esta tela mostra UMA única entidade em destaque, não uma lista.
+// Usa a união discriminada EstadoTela<Pet> para garantir que cada
+// estado (carregando, sucesso, erro) seja tratado de forma exaustiva.
+//
+// Restrições:
+//   • Nenhum `any` ou `as` desnecessário
+//   • switch sem `default` — a exaustividade é o ponto
+//   • Cores e espaçamentos vindos do theme.ts — nenhum hex solto
+// ============================================================
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+
+import { CardPet } from './src/components/card-pet';
+import { buscarPetEmDestaque } from './src/services/pet-service';
+import { type EstadoTela, type Pet } from './src/types/pet';
+import { cores, espaco } from './src/theme';
+
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>App de Gestão e Rotina Pet</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  const [estado, setEstado] = useState<EstadoTela<Pet>>({ tipo: 'carregando' });
+
+  const carregar = useCallback(async () => {
+    // TODO P2.19: implemente o carregamento do pet em destaque.
+    //   1. Volte para o estado 'carregando': setEstado({ tipo: 'carregando' })
+    //   2. Chame buscarPetEmDestaque() dentro de um try/catch
+    //   3. Sucesso → setEstado({ tipo: 'sucesso', dados: pet })
+    //   4. Erro → setEstado({ tipo: 'erro', mensagem: ... })
+    //   Lembre: o catch recebe `unknown`, não `Error`.
+    //   Use: erro instanceof Error ? erro.message : 'Erro desconhecido'
+  }, []);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  function registrarPasseio() {
+    // TODO P2.20: só faz sentido se estado.tipo for 'sucesso'.
+    //   Cheque o tipo ANTES de acessar estado.dados.
+    //   Atualize o statusPasseio para 'concluido' (só em memória):
+    //     setEstado({
+    //       tipo: 'sucesso',
+    //       dados: { ...estado.dados, statusPasseio: 'concluido' },
+    //     });
+  }
+
+  // Cada case retorna a tela inteira — sem `default`, sem break.
+  switch (estado.tipo) {
+    case 'carregando':
+      return (
+        <View style={styles.centro}>
+          {/* TODO P2.21: use cores.primaria como color do ActivityIndicator */}
+          <ActivityIndicator size="large" />
+        </View>
+      );
+
+    case 'sucesso':
+      return (
+        <View style={styles.container}>
+          {/* TODO P2.22: renderize o CardPet com:
+                - pet={estado.dados}
+                - aoRegistrarPasseio={registrarPasseio} */}
+        </View>
+      );
+
+    case 'erro':
+      return (
+        <View style={styles.centro}>
+          {/* TODO P2.23: mostre a mensagem de erro e um botão para tentar de novo.
+                - Um Text com estado.mensagem
+                - Um Text com onPress={carregar}: "Tentar novamente" */}
+        </View>
+      );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    paddingTop: 48,
+    // TODO: padding e backgroundColor dos tokens (espaco e cores)
+  },
+  centro: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    // TODO: backgroundColor dos tokens (cores.fundo)
   },
 });

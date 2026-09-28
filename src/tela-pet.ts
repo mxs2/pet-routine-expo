@@ -19,19 +19,10 @@
 // ------------------------------------------------------------
 
 import type { Pet } from './types/pet';
-import { rotuloEspecie, rotuloStatusPasseio } from './types/pet';
-import { buscarPetDoUsuario } from './services/petService';
+import { type EstadoTela, rotuloEspecie, rotuloStatusPasseio } from './types/pet';
+import { buscarPetEmDestaque } from './services/pet-service';
 
-// ============================================================
-// TODO P1.2.6 — união discriminada pelo campo `tipo`, três variantes:
-//   'carregando'  → nenhum outro campo
-//   'sucesso'     → dados: T
-//   'erro'        → mensagem: string
-// ============================================================
-export type EstadoTela<T> =
-  | { tipo: 'carregando' }
-  | { tipo: 'sucesso'; dados: T }
-  | { tipo: 'erro'; mensagem: string };
+export type { EstadoTela };
 
 // ============================================================
 // TODO P1.2.7 — devolva o texto que a tela mostraria em cada estado.
@@ -60,7 +51,7 @@ export function descreverTela(estado: EstadoTela<Pet>): string {
 // ============================================================
 export async function carregar(): Promise<EstadoTela<Pet>> {
   try {
-    const dados = await buscarPetDoUsuario();
+    const dados = await buscarPetEmDestaque();
     return { tipo: 'sucesso', dados };
   } catch (erro: unknown) {
     const mensagem = erro instanceof Error ? erro.message : 'Erro desconhecido';
@@ -97,4 +88,4 @@ if (VERIFICACAO_DE_TIPOS) {
 
 void rotuloEspecie;
 void rotuloStatusPasseio;
-void buscarPetDoUsuario;
+void buscarPetEmDestaque;

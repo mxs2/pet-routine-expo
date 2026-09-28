@@ -1,370 +1,464 @@
-# Prática 1
+# Prática 2
 
 > **Disciplina:** Desenvolvimento Mobile (2026.2.DM) — CESAR School
 > **Domínio destas práticas:** **App de Gestão e Rotina Pet** (`Pet`).
 
-| Projeto                    | Repositório        | Branch da disciplina |     |
-| -------------------------- | ------------------ | -------------------- | --- |
-| App de Gestão e Rotina Pet | `pet-routine-expo` | `feature/pratica_01` |     |
+| Projeto                    | Repositório        | Branch da disciplina |
+| -------------------------- | ------------------ | -------------------- |
+| App de Gestão e Rotina Pet | `pet-routine-expo` | `feature/pratica_02` |
 
+## Como usar este arquivo
 
-## Por que um domínio diferente do projeto
+- **Toda prática vem com um scaffold** — um esqueleto de código com marcações `// TODO`. Você completa os trechos que faltam; não precisa escrever do zero, e não deve apagar a estrutura dada.
+- **Apague o comentário `// TODO` quando resolver aquele ponto.** Um arquivo sem nenhum `TODO` é uma prática concluída.
 
-Os exercícios de `exercises.md` e o projeto da disciplina usam o domínio **`Habito`**. Estas práticas usam **`Pet`** de propósito.
+> 📦 **Componentes desta prática** — use **somente** estes sete: `View`, `ScrollView`, `Text`, `TextInput`, `Image`, `Button`, `Switch`, mais `StyleSheet` e Flexbox. Componentes de toque estilizáveis (`TouchableOpacity` etc.) e componentes de lista **não são assunto desta prática** e não devem aparecer nas entregas. Onde precisar de interação: `onPress` no `Button`, `onPress` no `Text`, `onChangeText` no `TextInput`, `onValueChange` no `Switch`.
 
-O motivo é simples: quando o domínio é o mesmo, dá para resolver copiando o que já foi escrito, e você exercita a **memória** em vez do **conceito**. Trocando de domínio, você é obrigado a decidir de novo — quais são os estados possíveis aqui, o que o servidor gera e o que o formulário envia, o que o card precisa mostrar. É a mesma ginástica que você vai fazer no primeiro dia de qualquer projeto real.
+> ⚠️ **Regras de escrita válidas para todas as práticas** — são exatamente os pontos que material antigo ensina errado:
+> 1. **Sem `JSX.Element`** como tipo de retorno. Não anote o retorno; o TypeScript infere.
+> 2. **Sem `as const`** dentro de `StyleSheet.create`. Em `theme.ts`, sim.
+> 3. **`gap`** para espaçar irmãos, não `margin` em cada filho.
+> 4. **`boxShadow`** para sombra, não o quarteto `shadow*` + `elevation`.
+> 5. **Zero `any`.**
 
-Se travar, a **tabela de equivalência** no final deste arquivo mostra o paralelo entre os dois domínios. Use como último recurso, não como primeiro.
+**Setup:**
 
-> 📌 **Como funciona o esqueleto.** Onde você vir `/* … */` ou um comentário `TODO`, é sua vez de escrever. O que já está escrito **não deve ser apagado** — em particular, os blocos marcados como *verificação* existem para provar que sua solução está certa: alguns precisam compilar, outros precisam **falhar** na compilação.
+```bash
+git clone https://github.com/renanalencar/pet-routine-expo pet-routine-expo
+cd pet-routine-expo
+git checkout feature/pratica_02
+npm install
+npx expo start
+```
 
 ---
 
-## Prática 1.1 — Modelagem do domínio Pet
+# Prática 2.1 — Tela do pet em destaque com estilo
 
-**Nível:** ⭐⭐ · **Tempo estimado:** 45 min · **Arquivo:** `src/types/pet.ts`
+**Nível:** ⭐⭐⭐ · **Tempo estimado:** 4 a 5 h · **Entrega:** individual · **Prazo:** próxima aula
 
-### Contexto
+## Contexto
 
-O **App de Gestão e Rotina Pet** ajuda tutores a acompanhar a rotina dos seus animais: espécie, porte, idade e o passeio do dia. O backend ainda não existe. Modele o domínio agora, para que a troca do mock pela API real seja quase indolor depois.
+Na Prática 1 você modelou o domínio `Pet` em TypeScript puro: tipos, serviço mockado e estado de tela. Agora é hora de **construir a tela de verdade** — e construí-la **com estilo sustentável desde o início**.
 
-Regras do domínio que você precisa respeitar:
+Esta tela mostra **uma única entidade em destaque**, não uma lista — listas e `FlatList` chegam mais adiante no semestre. Além da tela principal, você vai montar um **formulário** para cadastrar/editar um pet e um **sistema de tokens** que mantém cores e espaçamentos consistentes no app todo.
 
-- Um pet tem **exatamente uma** espécie e **exatamente um** porte.
-- O passeio do dia tem três desfechos possíveis: ainda **pendente**, **concluído** ou **cancelado**.
-- Quem gera `id`, `criadoEm` e o `statusPasseio` inicial é o **servidor** — o formulário de cadastro não envia nenhum dos três.
-- A lista "Meus pets" mostra só **nome, espécie e status do passeio** (mais o `id`, para identificar).
+## O que já está pronto (Prática 1)
 
-### Esqueleto
+Estes arquivos vieram da prática anterior e **não precisam ser reescritos**:
 
-```ts
-// ============================================================
-// TODO P1.1.1 — Union types literais. Nenhum destes pode ser `string`.
-//   EspeciePet     → cachorro, gato, ave, outro
-//   PortePet       → pequeno, medio, grande
-//   StatusPasseio  → pendente, concluido, cancelado
-// ============================================================
-export type EspeciePet = /* … */;
-export type PortePet = /* … */;
-export type StatusPasseio = /* … */;
-
-// ============================================================
-// TODO P1.1.2 — A entidade completa, como ela virá do servidor um dia.
-//   Campos: id, nome, especie, porte, statusPasseio, idadeMeses, criadoEm.
-//   Pense no tipo de cada um. Você vai justificar uma dessas escolhas
-//   na Prática 2.
-// ============================================================
-export interface Pet {
-  /* … */
-}
-
-// ============================================================
-// TODO P1.1.3 — Tipos DERIVADOS. Use utility types; não redigite campos.
-//   NovoPet         → o que o formulário de cadastro envia
-//   ResumoPet       → o que o card da lista "Meus pets" precisa
-//   AtualizacaoPet  → edição parcial de um pet já cadastrado
-// ============================================================
-export type NovoPet = /* … */;
-export type ResumoPet = /* … */;
-export type AtualizacaoPet = /* … */;
-
-// ============================================================
-// TODO P1.1.4 — Rótulos legíveis, com switch exaustivo e SEM `default`.
-// ============================================================
-export function rotuloStatusPasseio(status: StatusPasseio): string {
-  /* … */
-}
-
-export function rotuloEspecie(especie: EspeciePet): string {
-  /* … */
-}
-
-// ============================================================
-// VERIFICAÇÃO — não apague
-// ============================================================
-
-// DEVEM compilar exatamente assim, sem campos a mais nem a menos:
-const novo: NovoPet = {
-  nome: 'Fubá',
-  especie: 'gato',
-  porte: 'pequeno',
-  idadeMeses: 30,
-};
-
-const resumo: ResumoPet = {
-  id: 'p1',
-  nome: 'Fubá',
-  especie: 'gato',
-  statusPasseio: 'pendente',
-};
-
-const parcial: AtualizacaoPet = { idadeMeses: 31 };
-
-// DEVEM dar erro — descomente uma de cada vez para confirmar:
-// const errado1: NovoPet = { nome: 'Fubá', especie: 'gato', porte: 'pequeno', idadeMeses: 30, id: 'p1' };
-// const errado2: NovoPet = { nome: 'Fubá', especie: 'peixe', porte: 'pequeno', idadeMeses: 30 };
-// const errado3: ResumoPet = { id: 'p1', nome: 'Fubá', especie: 'gato' };
-// const errado4: AtualizacaoPet = { statusPasseio: 'concluido' };
-```
-
-### Teste final da prática
-
-Acrescente o campo `microchip: string` à interface `Pet`. **Quantos dos três tipos derivados você precisou editar à mão?** Anote a resposta — ela é o argumento inteiro a favor de derivar em vez de redigitar.
-
-### Critérios de avaliação
-
-| Critério | Peso | O que se espera |
-|---|---|---|
-| **Unions literais** | 30% | Nenhum campo de domínio tipado como `string` genérica |
-| **Tipos derivados** | 30% | `Omit`/`Pick`/`Partial` a partir de `Pet`; nenhum campo redigitado à mão |
-| **Exaustividade** | 25% | `switch` sem `default`; os blocos de verificação passam e os de erro falham |
-| **Ausência de `any` e `as`** | 15% | Nenhum `any`; `as` só com justificativa em comentário |
-
----
-
-## Prática 1.2 — Serviço mockado e estado de tela
-
-**Nível:** ⭐⭐ · **Tempo estimado:** 30 min · **Arquivos:** `src/services/petService.ts` e `src/tela-pet.ts`
-
-### Contexto
-
-Antes de existir tela, existe o **estado da tela**. Nesta prática você monta a camada de dados falsa e a máquina de estados que a tela vai consumir na Aula 2 — tudo em TypeScript puro, verificável por `tsc`.
-
-### Esqueleto — arquivo 1 de 2
-
-`src/services/petService.ts`
-
-```ts
-import type { Pet } from '../types/pet';
-
-// Deixe esta constante no código para conseguir testar o caminho de erro
-// sem editar mais nada.
-const SIMULAR_ERRO = false;
-
-const ATRASO_MS = 1000;   // para o estado de carregando ser visível
-
-// TODO P1.2.1 — declare o pet mockado. Ele precisa satisfazer `Pet` inteiro;
-//   não use `as` para escapar de campos faltando.
-const MOCK: Pet = {
-  /* … */
-};
-
-/**
- * Devolve UM pet — o do tutor logado. Assinatura propositalmente idêntica
- * à que uma chamada HTTP real teria, para a troca ser indolor.
- */
-export async function buscarPetDoUsuario(): Promise<Pet> {
-  // TODO P1.2.2 — espere ATRASO_MS antes de responder.
-  //   Dica: `await new Promise((r) => setTimeout(r, ATRASO_MS));`
-
-  // TODO P1.2.3 — se SIMULAR_ERRO for true, lance um Error com mensagem legível
-  //   para o usuário final — não um stack trace.
-
-  // TODO P1.2.4 — devolva o MOCK.
-  /* … */
-}
-
-/**
- * Registra o passeio do dia. Por enquanto só devolve o pet com o
- * status atualizado; persistência é assunto de aula futura.
- */
-export async function registrarPasseio(pet: Pet): Promise<Pet> {
-  // TODO P1.2.5 — devolva uma CÓPIA do pet com statusPasseio 'concluido'.
-  //   Não mute o objeto recebido.
-  /* … */
-}
-```
-
-### Esqueleto — arquivo 2 de 2
-
-`src/tela-pet.ts` — a lógica da tela, ainda sem tela.
-
-```ts
-import type { Pet } from './types/pet';
-import { rotuloEspecie, rotuloStatusPasseio } from './types/pet';
-import { buscarPetDoUsuario } from './services/petService';
-
-// ============================================================
-// TODO P1.2.6 — união discriminada pelo campo `tipo`, três variantes:
-//   'carregando'  → nenhum outro campo
-//   'sucesso'     → dados: T
-//   'erro'        → mensagem: string
-// ============================================================
-export type EstadoTela<T> = /* … */;
-
-// ============================================================
-// TODO P1.2.7 — devolva o texto que a tela mostraria em cada estado.
-//   Use SOMENTE os campos que existem em cada variante.
-//   Não escreva `default`.
-//     carregando → 'Carregando…'
-//     sucesso    → `${nome} · ${especie legível} · ${status legível}`
-//     erro       → `Erro: ${mensagem}`
-// ============================================================
-export function descreverTela(estado: EstadoTela<Pet>): string {
-  /* … */
-}
-
-// ============================================================
-// TODO P1.2.8 — carregue o pet e devolva o EstadoTela resultante.
-//   Sucesso → { tipo: 'sucesso', dados }
-//   Falha   → { tipo: 'erro', mensagem }  (nunca deixe a exceção escapar)
-// ============================================================
-export async function carregar(): Promise<EstadoTela<Pet>> {
-  /* … */
-}
-
-// ============================================================
-// VERIFICAÇÃO — não apague
-// ============================================================
-declare const petExemplo: Pet;
-
-// `declare const` existe só para o compilador — ele é apagado na compilação.
-// Por isso as chamadas abaixo ficam atrás deste guard: elas precisam ser
-// TYPE-CHECKED, mas não podem EXECUTAR (dariam `ReferenceError: petExemplo
-// is not defined` ao rodar o arquivo com tsx). O tipo explícito `: boolean`
-// impede o TS de estreitar para `false` e marcar o bloco como inalcançável.
-const VERIFICACAO_DE_TIPOS: boolean = false;
-
-if (VERIFICACAO_DE_TIPOS) {
-  // DEVEM compilar:
-  descreverTela({ tipo: 'carregando' });
-  descreverTela({ tipo: 'sucesso', dados: petExemplo });
-  descreverTela({ tipo: 'erro', mensagem: 'Sem conexão' });
-}
-
-// DEVEM dar erro — descomente uma de cada vez (dentro do `if` acima):
-// descreverTela({ tipo: 'carregando', dados: petExemplo });
-// descreverTela({ tipo: 'erro', dados: petExemplo });
-// descreverTela({ tipo: 'offline' });
-
-// Rode com `npx tsx src/tela-pet.ts` depois de descomentar:
-// carregar().then((estado) => console.log(descreverTela(estado)));
-```
-
-### O que entregar
-
-Os dois arquivos completos, mais **três linhas de comentário** no topo de `tela-pet.ts` respondendo:
-
-1. Qual estado impossível a união discriminada torna **não representável** aqui?
-2. Por que `carregar()` captura a exceção em vez de deixá-la subir?
-3. Uma decisão de modelagem que você tomou na Prática 1 e o motivo.
-
-### Critérios de avaliação
-
-| Critério | Peso | O que se espera |
-|---|---|---|
-| **União discriminada correta** | 30% | Três variantes, discriminante literal, campos exclusivos de cada uma |
-| **`switch` exaustivo** | 25% | Sem `default`; os blocos de erro da verificação realmente falham |
-| **Serviço assíncrono** | 25% | Atraso artificial, caminho de erro testável, `registrarPasseio` sem mutar o argumento |
-| **As três respostas** | 20% | Específicas, não genéricas |
-
----
-
-## Prática 1.3 — Relatório de decisão de plataforma
-
-**Nível:** ⭐⭐ · **Tempo estimado:** 1 h · **Entrega:** individual · **Formato:** 1 a 2 páginas
-
-### Contexto
-
-Uma **rede de 40 clínicas veterinárias** contratou sua consultoria para um app que ajude tutores a acompanhar a rotina dos pets. Restrições do projeto:
-
-- **Orçamento:** R$ 90 mil, primeira versão
-- **Prazo:** 3 meses até o piloto
-- **Equipe disponível:** 2 desenvolvedores — ambos com TypeScript e React, **nenhum** com Kotlin ou Swift
-- **Público:** tutores de todas as faixas de renda; **65% dos aparelhos do público-alvo são Android de entrada** com menos de 4 GB de RAM
-- **Requisitos funcionais que envolvem hardware:**
-  - Tirar foto do pet e de documentos (carteira de vacinação)
-  - Capturar a localização GPS durante passeios
-  - Funcionar com conectividade instável — registrar offline e sincronizar depois
-  - Notificar o tutor sobre vacinas e consultas agendadas
-- Também é necessário um **painel para as clínicas**, usado em desktop na recepção
-
-### Esqueleto do relatório
-
-Preencha as lacunas. A estrutura é fixa; o conteúdo é seu.
-
-```markdown
-# Relatório de decisão de plataforma — App de Rotina Pet
-
-**Autor:** ____________________   **Data:** ____________
-
-## 1. Recomendação
-
-Para o app do tutor, recomendo a abordagem **____________________**
-(nativo | cross-platform | web/PWA).
-
-## 2. Restrições que sustentam a escolha
-
-Cite TRÊS restrições do enunciado, textualmente. Não argumente em abstrato.
-
-| # | Restrição do enunciado | Como ela empurra para a minha escolha |
-|---|---|---|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-
-## 3. O que estamos perdendo
-
-Abordagem rejeitada: ____________________
-
-O que a organização deixa de ganhar ao não escolhê-la:
-____________________________________________________________
-
-(Toda decisão tem custo. Uma resposta que não nomeia nenhum custo
-está escondendo o custo, não eliminando-o.)
-
-## 4. O painel das clínicas
-
-Mesma tecnologia do app do tutor?  ( ) sim   ( ) não
-
-Justificativa:
-____________________________________________________________
-
-## 5. Risco técnico e mitigação
-
-| | |
+| Arquivo | O que contém |
 |---|---|
-| **Risco concreto** | |
-| **Por que ele é plausível aqui** | |
-| **Como eu mitigaria** | |
+| `src/types/pet.ts` | `Pet`, unions literais, tipos derivados, rótulos, `EstadoTela<T>` |
+| `src/services/pet-service.ts` | `buscarPetEmDestaque()`, `registrarPasseio()`, mock com atraso |
+| `src/tela-pet.ts` | Lógica de tela pura (verificação em TS) |
 
-## 6. A pergunta que eu faria ao cliente
+## Estrutura de arquivos a criar/completar
 
-Algo que o enunciado NÃO informa e que poderia mudar minha resposta:
-
-____________________________________________________________
-
-Se a resposta fosse ____________, eu mudaria minha recomendação para
-____________, porque ____________.
 ```
+pet-routine-expo/
+├── App.tsx                          ← tela principal (scaffold 4)
+└── src/
+    ├── theme.ts                     ← tokens de design (scaffold 1)
+    ├── types/pet.ts                 ← já pronto (Prática 1)
+    ├── services/pet-service.ts      ← já pronto (Prática 1)
+    ├── components/
+    │   ├── card.tsx                  ← card reutilizável (scaffold 2)
+    │   └── card-pet.tsx             ← card do pet (scaffold 3)
+    └── screens/
+        └── pet-form.tsx             ← formulário (scaffold 5)
+```
+
+> **Ordem recomendada:** theme.ts → card.tsx → card-pet.tsx → App.tsx → pet-form.tsx.
+> O `npm run typecheck` vai apontar erros nos arquivos que dependem de tokens ainda não definidos — resolva o theme primeiro.
+
+---
+
+## Scaffold 1 — `src/theme.ts`
+
+Tokens são **valores** (cores, espaçamentos, tipografia), não layouts prontos. `as const` vai aqui; nunca dentro de `StyleSheet.create`.
+
+```ts
+export const cores = {
+  fundo: '#FEF7EE',
+  cartao: '#FFFFFF',
+  // TODO P2.1: complete com texto, textoFraco, primaria, sucesso, erro
+} as const;
+
+export const espaco = {
+  // TODO P2.2: escala de 4+ degraus (xs, sm, md, lg). Progressão consistente.
+} as const;
+
+export const tipografia = {
+  // TODO P2.3: titulo, corpo, legenda. Objetos de estilo de TEXTO.
+} as const;
+
+// TODO P2.4: por que `as const` aqui e não em StyleSheet.create?
+```
+
+---
+
+## Scaffold 2 — `src/components/card.tsx`
+
+Componente genérico — ele não sabe nada sobre `Pet`. Recebe `children` e uma prop opcional `destacado`.
+
+```tsx
+import { type ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { cores, espaco } from '../theme';
+
+type CardProps = {
+  children: ReactNode;
+  // TODO P2.5: prop opcional `destacado`
+};
+
+export function Card({ children /* TODO P2.6 */ }: CardProps) {
+  // TODO P2.7: array de estilos — base sempre, variante só quando destacado
+  return <View style={styles.card}>{children}</View>;
+}
+
+const styles = StyleSheet.create({
+  card: {
+    // TODO P2.8: padding, borderRadius, backgroundColor — tudo dos tokens
+    // TODO P2.9: boxShadow + gap
+  },
+  cardDestacado: {
+    // TODO P2.10: o que muda no destaque?
+  },
+});
+```
+
+---
+
+## Scaffold 3 — `src/components/card-pet.tsx`
+
+Usa o `Card` reutilizável e os tipos do domínio. A ação "Registrar passeio" vem das props — o card não sabe o que fazer, só avisa que o toque aconteceu.
+
+```tsx
+import { StyleSheet, Text, View } from 'react-native';
+import { type Pet, rotuloEspecie, rotuloStatusPasseio } from '../types/pet';
+import { cores, espaco, tipografia } from '../theme';
+import { Card } from './card';
+
+// TODO P2.11: tipe as props (pet: Pet, aoRegistrarPasseio: () => void)
+type CardPetProps = { /* ... */ };
+
+export function CardPet({ /* TODO P2.12 */ }: CardPetProps) {
+  return (
+    <Card>
+      {/* TODO P2.13: nome do pet */}
+      {/* TODO P2.14: linha com espécie e status, um em cada ponta */}
+      {/* TODO P2.15: idade em meses */}
+      {/* TODO P2.16: Text com onPress para "Registrar passeio" */}
+    </Card>
+  );
+}
+
+const styles = StyleSheet.create({
+  linha: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    // TODO P2.17: marginTop com token
+  },
+  botao: {
+    // TODO P2.18: marginTop, fontWeight, color — tudo dos tokens
+  },
+});
+```
+
+---
+
+## Scaffold 4 — `App.tsx`
+
+A tela principal. Usa `EstadoTela<Pet>` no state do React e um `switch` exaustivo (sem `default`) para renderizar cada variante.
+
+```tsx
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { CardPet } from './src/components/card-pet';
+import { buscarPetEmDestaque } from './src/services/pet-service';
+import { type EstadoTela, type Pet } from './src/types/pet';
+import { cores, espaco } from './src/theme';
+
+export default function App() {
+  const [estado, setEstado] = useState<EstadoTela<Pet>>({ tipo: 'carregando' });
+
+  const carregar = useCallback(async () => {
+    // TODO P2.19: carregando → buscar → sucesso ou erro
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  function registrarPasseio() {
+    // TODO P2.20: só se estado.tipo === 'sucesso'. Atualize statusPasseio.
+  }
+
+  switch (estado.tipo) {
+    case 'carregando':
+      return (
+        <View style={styles.centro}>
+          {/* TODO P2.21: ActivityIndicator com color do token */}
+          <ActivityIndicator size="large" />
+        </View>
+      );
+    case 'sucesso':
+      return (
+        <View style={styles.container}>
+          {/* TODO P2.22: <CardPet pet={estado.dados} aoRegistrarPasseio={registrarPasseio} /> */}
+        </View>
+      );
+    case 'erro':
+      return (
+        <View style={styles.centro}>
+          {/* TODO P2.23: mensagem + Text com onPress para tentar de novo */}
+        </View>
+      );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, paddingTop: 48 /* TODO: padding e backgroundColor dos tokens */ },
+  centro:    { flex: 1, alignItems: 'center', justifyContent: 'center' /* TODO: backgroundColor */ },
+});
+```
+
+---
+
+## Scaffold 5 — `src/screens/pet-form.tsx`
+
+Formulário dentro de um `ScrollView`. Inputs controlados, `Switch`, `Button` desabilitado quando o nome está vazio.
+
+```tsx
+import { useState } from 'react';
+import { Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { cores, espaco, tipografia } from '../theme';
+
+export default function PetForm() {
+  const [nome, setNome] = useState('');
+  const [raca, setRaca] = useState('');
+  const [alertaVacina, setAlertaVacina] = useState(false);
+
+  // TODO P2.24: substitua `true` por nome.trim() === ''
+  const nomeVazio = true;
+
+  return (
+    <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
+      <Text style={styles.rotulo}>Nome do pet</Text>
+      {/* TODO P2.26: value + onChangeText */}
+      {/* TODO P2.27: array de estilos com inputInvalido quando nomeVazio */}
+      <TextInput style={styles.input} placeholder="Ex: Rex" />
+
+      <Text style={styles.rotulo}>Raça</Text>
+      {/* TODO P2.28: input controlado */}
+      <TextInput style={styles.input} placeholder="Ex: Golden Retriever" />
+
+      <View style={styles.linha}>
+        <Text style={styles.rotulo}>Alerta de vacina</Text>
+        {/* TODO P2.29: Switch controlado (value + onValueChange) */}
+        <Switch />
+      </View>
+
+      <View style={styles.areaBotao}>
+        {/* TODO P2.30: disabled={nomeVazio} */}
+        {/* TODO P2.31: color={cores.primaria} */}
+        <Button title="Salvar" onPress={() => {}} />
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  tela:         { flex: 1 /* TODO P2.32: backgroundColor */ },
+  conteudo:     { /* TODO P2.33: padding e gap dos tokens */ },
+  input:        { borderWidth: 1 /* TODO P2.34: borderColor, borderRadius, padding, fontSize */ },
+  inputInvalido:{ /* TODO P2.35: só o que muda — ex: borderColor: cores.erro */ },
+  linha:        { /* TODO P2.36: row, space-between, center */ },
+  rotulo:       { /* TODO P2.37: tipografia */ },
+  areaBotao:    { borderRadius: 8, overflow: 'hidden' /* TODO P2.38: marginTop do token */ },
+});
+```
+
+> **Para testar o formulário** sem navegação entre telas: troque temporariamente o componente renderizado em `App.tsx` por `PetForm` e depois devolva.
+
+---
+
+## Como testar o estado de erro
+
+Troque `SIMULAR_ERRO` para `true` em `src/services/pet-service.ts`, confira a tela de erro e o botão "Tentar novamente", e devolva a constante para `false` antes de entregar — mas **deixe a constante no código**.
+
+---
+
+## O que entregar
+
+1. Os cinco arquivos acima, com todos os `TODO` resolvidos e **removidos**.
+2. Os **três estados** funcionando na tela principal: carregando, sucesso e erro.
+3. A ação **"Registrar passeio"** alterando o estado local (o status do pet muda na tela).
+4. O **formulário** funcional: inputs controlados, switch, botão desabilitado quando o nome está vazio, pelo menos um estilo condicional.
+5. O **sistema de tokens** (`theme.ts`) usado de fato em todos os componentes — nenhum hex ou número mágico nos componentes.
+6. Um `README.md` complementando o do repositório com:
+   - **Uma decisão de modelagem** que você tomou e o motivo (ex.: por que `type` e não `interface`, por que esse conjunto de status).
+   - **Uma decisão de organização de estilo** que você tomou e o motivo (ex.: por que tal estilo virou token e tal outro ficou local).
+
+---
+
+## Restrições (é aqui que a nota se decide)
+
+- ❌ Nenhum `JSX.Element` como tipo de retorno
+- ❌ Nenhum `as const` dentro de `StyleSheet.create`
+- ❌ Nenhum `margin` usado para espaçar irmãos (use `gap`)
+- ❌ Nenhum quarteto `shadowColor`/`shadowOffset`/`shadowOpacity`/`shadowRadius` (use `boxShadow`)
+- ❌ Nenhum componente fora dos sete permitidos + `StyleSheet`
+- ❌ Nenhum `any`
+- ❌ Nenhuma cor ou espaçamento em hex/número mágico dentro de componentes — tudo vem do `theme.ts`
+- ❌ Nenhum `as` sem justificativa em comentário
+
+---
+
+## Critérios de avaliação
+
+| Critério | Peso | O que se espera |
+|---|---|---|
+| **Tokens bem desenhados** | 15% | São valores, não layouts; escala de espaço coerente; usados em todos os componentes |
+| **Uso correto de Flexbox** | 15% | Eixo correto, `flex: 1` onde necessário, `gap` no lugar de `margin` |
+| **Os três estados funcionam** | 15% | Loading, sucesso e erro visíveis e testáveis |
+| **Componente Card reutilizável** | 15% | Props tipadas, `destacado` via array de estilos, sem valores mágicos |
+| **Formulário funcional** | 15% | Inputs controlados, Switch, contentContainerStyle, botão desabilitado |
+| **Ação de registrar passeio** | 10% | Funciona e atualiza o estado local corretamente |
+| **Respeito às restrições** | 10% | Cada item da lista acima que aparecer no código desconta |
+| **README** | 5% | Decisões explicadas com motivo real |
+
+## O que **não** é avaliado
+
+Beleza visual, animações, navegação entre telas, persistência, listas. Foque na modelagem de estado, nos três estados da tela, no formulário e na consistência do estilo.
+
+---
+
+# Prática 2.2 — Auditoria de estilo em código alheio
+
+**Nível:** ⭐⭐ · **Tempo estimado:** 1 h · **Entrega:** individual · **Formato:** `docs/pratica-2.2-auditoria-estilo.md`
+
+## Contexto
+
+Você entrou num time que mantém um app React Native de dois anos atrás. Seu tech lead pede uma **auditoria da camada de estilo** antes de vocês começarem a mexer.
+
+Abaixo está um trecho representativo do código que você encontrou.
+
+```tsx
+import React from 'react';
+import { View, Text, ScrollView, Button, StyleSheet } from 'react-native';
+import globalStyles from '../styles/globalStyles';
+
+export default function TelaResumo(props: any): JSX.Element {
+  const [aberto, setAberto] = React.useState(false);
+
+  return (
+    <ScrollView style={{ padding: 20, alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+        <Text style={{ fontSize: 18, color: '#333', fontWeight: 'bold' }}>Resumo</Text>
+        <Text style={{ fontSize: 18, color: '#333' }}>{props.total}</Text>
+      </View>
+
+      <View style={globalStyles.container}>
+        <Text style={{ fontSize: 14, color: '#666' }}>{props.nome}</Text>
+      </View>
+
+      <View style={[globalStyles.container, styles.item]}>
+        <Text style={{ fontSize: 14, color: '#666', fontSize: 16 }}>{props.detalhe}</Text>
+      </View>
+
+      <Button
+        style={globalStyles.button}
+        title={aberto ? 'Fechar' : 'Abrir'}
+        onPress={() => setAberto(!aberto)}
+      />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  item: {
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+});
+```
+
+```tsx
+// ../styles/globalStyles.ts
+import { StyleSheet } from 'react-native';
+
+export default StyleSheet.create({
+  container: { flex: 1, padding: 20 },
+  text: { fontSize: 18, color: '#333' },
+  button: { backgroundColor: 'blue', padding: 10, borderRadius: 5, alignItems: 'center' },
+});
+```
+
+## O que entregar
+
+O template está em `docs/pratica-2.2-auditoria-estilo.md`. Preencha:
+
+1. **Lista de problemas encontrados** — pelo menos **oito**, cada um com: o que está errado, consequência **concreta**, e correção. "É feio" não é consequência concreta.
+2. **Um problema arquitetural** — algo que não se resolve trocando uma linha. Explique por que a **estrutura** o produz.
+3. **O `globalStyles.ts` reescrito** como `theme.ts` de tokens — com explicação do que você removeu e por quê.
+4. **Ordem de prioridade da refatoração** — você tem meio dia. Justifique por **risco** e **retorno**, não pela ordem no arquivo.
+5. **Um problema que você decidiu NÃO corrigir**, e por quê.
 
 ### Critérios de avaliação
 
 | Critério | Peso | O que se espera |
 |---|---|---|
-| **Argumentação ancorada nas restrições** | 35% | Cita restrições do enunciado, não generalidades sobre tecnologia |
-| **Honestidade sobre o trade-off** | 25% | Reconhece o que se perde; não vende a escolha como perfeita |
-| **Risco e mitigação** | 20% | Risco plausível e específico, com mitigação viável |
-| **Decisão sobre o painel** | 10% | Coerente, com justificativa |
-| **Qualidade da pergunta ao cliente** | 10% | Uma pergunta que **realmente** mudaria a decisão |
+| **Cobertura dos problemas** | 30% | Pelo menos 8, com correção correta |
+| **Problema arquitetural** | 25% | Percebeu o acoplamento, não só erros de sintaxe |
+| **`theme.ts` reescrito** | 20% | Tokens são valores; explicou o que saiu e por quê |
+| **Priorização por risco/retorno** | 15% | Não é lista na ordem do arquivo |
+| **O item que ficou de fora** | 10% | Escolha defensável |
 
-> **Não existe uma resposta única correta.** Cross-platform é defensável; PWA é defensável em parte; nativo é defensável com ressalvas fortes. O que é avaliado é a **qualidade do raciocínio**, não a coincidência com a opinião do professor.
+> **Não existe uma resposta única.** O que é avaliado é a qualidade do raciocínio de engenharia.
 
 ---
 
-# Anexo — Equivalência de domínio
+# Prática 2.3 — Flexbox Froggy + relatório curto *(opcional)*
 
-Use como **último recurso**, quando travar de verdade. O ponto da prática é decidir de novo, não traduzir.
+**Nível:** ⭐ · **Tempo estimado:** 30 min
 
-| `Habito` *(exercises.md e projeto)* | `Pet` *(estas práticas)* |
+Complete os 24 níveis do [Flexbox Froggy](https://flexboxfroggy.com/). Depois entregue **meia página**:
+
+- **Três diferenças** que você notou entre o Flexbox do jogo (CSS) e o do React Native.
+- **Um nível** que exigiria código diferente em React Native, com os dois códigos lado a lado.
+
+**Por que vale a pena:** o jogo constrói intuição de eixo muito rápido. Mas ele é CSS — e transferir sem perceber as diferenças é como aprender espanhol e falar português achando que é o mesmo idioma.
+
+---
+
+# Equivalência de domínio
+
+Use como **último recurso**. O ponto da prática é decidir de novo, não traduzir.
+
+| `Habito` *(material da aula)* | `Pet` *(seu domínio)* |
 |---|---|
 | `Habito` | `Pet` |
+| `CardHabito` | `CardPet` |
 | `titulo: string` | `nome: string` |
-| `categoria: CategoriaHabito` (`'saude' \| 'produtividade' \| 'mentalidade' \| 'sono'`) | `especie: EspeciePet` (`'cachorro' \| 'gato' \| 'ave' \| 'outro'`) |
-| `frequencia: FrequenciaHabito` | `porte: PortePet` (`'pequeno' \| 'medio' \| 'grande'`) |
+| `categoria: CategoriaHabito` | `especie: EspeciePet` |
+| `frequencia: FrequenciaHabito` | `porte: PortePet` |
 | `status: StatusHabito` (`'pendente' \| 'concluido' \| 'pulado'`) | `statusPasseio: StatusPasseio` (`'pendente' \| 'concluido' \| 'cancelado'`) |
 | `streakDias: number` | `idadeMeses: number` |
 | `rotuloStatus()` | `rotuloStatusPasseio()` |
-| `buscarHabitoDoDia()` | `buscarPetDoUsuario()` |
+| `buscarHabitoDoDia()` | `buscarPetEmDestaque()` |
+| "Hábito do dia" | "Pet em destaque" |
 | "Marcar concluído hoje" | "Registrar passeio" |
-| `CardHabito` *(Aula 2)* | `CardPet` *(Aula 2)* |
+
+---
+
+## Resumo de tempos
+
+| Parte                             | Onde | Tempo   |
+| --------------------------------- | ---- | ------- |
+| Prática 2.1                       | Casa | 4–5 h   |
+| Prática 2.2                       | Casa | ~1 h    |
+| Prática 2.3 *(opcional)*          | Casa | ~30 min |

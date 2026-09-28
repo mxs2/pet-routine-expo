@@ -79,6 +79,16 @@ export function rotuloEspecie(especie: EspeciePet): string {
 }
 
 // ============================================================
+// Estado de tela — união discriminada para qualquer tela do app.
+// Definido aqui (junto ao domínio) para ser reutilizado tanto em
+// lógica pura (tela-pet.ts) quanto nos componentes React (App.tsx).
+// ============================================================
+export type EstadoTela<T> =
+  | { tipo: 'carregando' }
+  | { tipo: 'sucesso'; dados: T }
+  | { tipo: 'erro'; mensagem: string };
+
+// ============================================================
 // VERIFICAÇÃO — não apague
 // ============================================================
 

@@ -43,5 +43,6 @@ yarn-error.*
 .env
 AGENTS.md
 CLAUDE.md
+.claude
 .agents
 .rtk
