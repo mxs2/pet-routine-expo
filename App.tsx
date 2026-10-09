@@ -14,6 +14,7 @@
 // ============================================================
 import { useState } from "react";
 import {
+  Pressable,
   SectionList,
   type SectionListData,
   StyleSheet,
@@ -27,6 +28,7 @@ import { PETS } from "./src/data/pets";
 import { agrupar, filtrarPorNome, type Secao } from "./src/lib/agrupar";
 import { ItemPet } from "./src/components/item-pet";
 import { ListaVazia } from "./src/components/lista-vazia";
+import { Comedouro } from "./src/screens/comedouro";
 import { TelaRegistro } from "./src/screens/tela-registro";
 import { borda, cores, espaco, raio, tipografia } from "./src/theme";
 
@@ -52,6 +54,8 @@ export default function App() {
   const [atualizando, setAtualizando] = useState(false);
   // ID do pet sendo registrado, ou null para mostrar a lista.
   const [petRegistrando, setPetRegistrando] = useState<string | null>(null);
+  // Prática 3.4 (bônus): ferramenta de nível do comedouro.
+  const [mostrarNivel, setMostrarNivel] = useState(false);
 
   function alternarStatus(id: string) {
     setPets((anteriores) =>
@@ -97,6 +101,10 @@ export default function App() {
     setPetRegistrando(null);
   }
 
+  if (mostrarNivel) {
+    return <Comedouro onVoltar={() => setMostrarNivel(false)} />;
+  }
+
   const petAlvo = pets.find((p) => p.id === petRegistrando);
   if (petAlvo) {
     return (
@@ -138,6 +146,13 @@ export default function App() {
             <Text style={tipografia.legenda}>
               Toque para alternar o passeio · toque longo para remover
             </Text>
+            <Pressable
+              onPress={() => setMostrarNivel(true)}
+              accessibilityRole="button"
+              style={styles.atalho}
+            >
+              <Text style={tipografia.acao}>Nivelar o comedouro</Text>
+            </Pressable>
             <TextInput
               value={busca}
               onChangeText={setBusca}
@@ -175,6 +190,9 @@ const styles = StyleSheet.create({
     fontWeight: tipografia.acao.fontWeight,
     backgroundColor: cores.fundo,
     paddingVertical: espaco.sm,
+  },
+  atalho: {
+    alignSelf: "flex-start",
   },
   busca: {
     borderWidth: borda.fina,

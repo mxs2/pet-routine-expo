@@ -52,6 +52,8 @@ export const tipografia = {
 export const dimensao = {
   miniatura: 120,
   previa: 200,
+  nivel: 220,
+  bolha: 44,
 } as const;
 
 export const opacidade = {
