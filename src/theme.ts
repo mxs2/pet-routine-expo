@@ -19,6 +19,8 @@ export const cores = {
   sucesso: "#2E8B57",
   erro: "#C0392B",
   borda: "#E2D6C6",
+  textoSobrePrimaria: "#FFFFFF",
+  neutra: "#8A8175",
   sombra: "rgba(43, 33, 24, 0.12)",
 } as const;
 
@@ -45,6 +47,15 @@ export const tipografia = {
   corpo: { fontSize: 16, fontWeight: "400", color: cores.texto },
   legenda: { fontSize: 13, fontWeight: "400", color: cores.textoFraco },
   acao: { fontSize: 16, fontWeight: "600", color: cores.primaria },
+} as const;
+
+export const dimensao = {
+  miniatura: 120,
+  previa: 200,
+} as const;
+
+export const opacidade = {
+  pressionado: 0.7,
 } as const;
 
 export const sombra = {
