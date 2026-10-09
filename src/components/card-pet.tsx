@@ -9,48 +9,55 @@
 // Componentes permitidos: View, Text (dos 7 da aula).
 //   Ação de toque via onPress do Text, não Touchable*.
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from "react-native";
 
-import { type Pet, rotuloEspecie, rotuloStatusPasseio } from '../types/pet';
-import { cores, espaco, tipografia } from '../theme';
-import { Card } from './card';
+import { type Pet, rotuloEspecie, rotuloStatusPasseio } from "../types/pet";
+import { cores, espaco, tipografia } from "../theme";
+import { Card } from "./card";
 
-// TODO P2.11: tipe as props. O card recebe:
-//   - pet: Pet
-//   - aoRegistrarPasseio: () => void
 type CardPetProps = {
-  /* ... */
+  pet: Pet;
+  aoRegistrarPasseio: () => void;
 };
 
-export function CardPet({ /* TODO P2.12: desestruture as props */ }: CardPetProps) {
+export function CardPet({ pet, aoRegistrarPasseio }: CardPetProps) {
+  const concluido = pet.statusPasseio === "concluido";
+
   return (
-    <Card>
-      {/* TODO P2.13: nome do pet (Text com estilo de título) */}
+    <Card destacado>
+      <Text style={tipografia.titulo}>{pet.nome}</Text>
 
-      {/* TODO P2.14: uma View com flexDirection 'row' e justifyContent 'space-between'.
-            Dentro dela, dois Text:
-              - espécie à esquerda: rotuloEspecie(pet.especie)
-              - status à direita: rotuloStatusPasseio(pet.statusPasseio) */}
+      <View style={styles.linha}>
+        <Text style={tipografia.corpo}>{rotuloEspecie(pet.especie)}</Text>
+        <Text style={[tipografia.corpo, concluido && styles.statusConcluido]}>
+          {rotuloStatusPasseio(pet.statusPasseio)}
+        </Text>
+      </View>
 
-      {/* TODO P2.15: idade em meses (Text com estilo de legenda).
-            Ex: "24 meses" */}
+      <Text style={tipografia.legenda}>{pet.idadeMeses} meses</Text>
 
-      {/* TODO P2.16: um Text com onPress que chame aoRegistrarPasseio.
-            Texto: "Registrar passeio".
-            A ação vem das props — o card não sabe O QUE fazer,
-            só avisa que o toque aconteceu. */}
+      <Text
+        style={styles.botao}
+        onPress={aoRegistrarPasseio}
+        accessibilityRole="button"
+      >
+        Registrar passeio
+      </Text>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
   linha: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    // TODO P2.17: use espaco para o marginTop
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: espaco.xs,
+  },
+  statusConcluido: {
+    color: cores.sucesso,
   },
   botao: {
-    // TODO P2.18: marginTop, fontWeight e color — tudo dos tokens.
-    //   Dica: a cor do botão pode ser cores.primaria.
+    ...tipografia.acao,
+    marginTop: espaco.sm,
   },
 });
