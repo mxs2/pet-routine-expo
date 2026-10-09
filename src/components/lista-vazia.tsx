@@ -7,27 +7,28 @@
 //   - primeiro acesso → o que ele pode fazer
 //   - busca sem resultado → o que ele pode tentar
 // ============================================================
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from "react-native";
 
-import { cores, espaco, tipografia } from '../theme';
+import { cores, espaco, tipografia } from "../theme";
 
 type ListaVaziaProps = {
-  // TODO P3.12: uma prop que permita distinguir "primeiro acesso" de "busca sem resultado".
-  //   Sugestão: termoBusca?: string
-  //   Se termoBusca está definido e não-vazio → "busca sem resultado"
-  //   Senão → "primeiro acesso" (a lista está vazia de verdade)
+  // Definido e não vazio → busca sem resultado; senão → lista vazia de verdade.
+  termoBusca?: string;
 };
 
-export function ListaVazia(/* TODO P3.12: desestruture a prop */) {
-  // TODO P3.13: dois textos diferentes, conforme o cenário.
-  //   Primeiro acesso: "Nenhum pet cadastrado. Que tal adicionar um?"
-  //   Busca sem resultado: "Nenhum pet encontrado para '${termoBusca}'."
-  //   A frase da busca MENCIONA o termo procurado.
-  //   As duas frases são DIFERENTES — repetir a mesma é erro.
+export function ListaVazia({ termoBusca }: ListaVaziaProps) {
+  const termo = termoBusca?.trim() ?? "";
+  const buscando = termo !== "";
+
   return (
     <View style={styles.container}>
+      <Text style={styles.titulo}>
+        {buscando ? "Nenhum pet encontrado" : "Nenhum pet cadastrado"}
+      </Text>
       <Text style={styles.texto}>
-        {/* TODO P3.13 */}
+        {buscando
+          ? `Nada com "${termo}" no nome. Confira a grafia ou apague a busca para ver todos.`
+          : "Que tal adicionar o primeiro? Puxe a lista para baixo para recarregar."}
       </Text>
     </View>
   );
@@ -35,12 +36,17 @@ export function ListaVazia(/* TODO P3.12: desestruture a prop */) {
 
 const styles = StyleSheet.create({
   container: {
-    // TODO P3.14: centralize e use padding generoso (espaco.lg ou xl)
-    alignItems: 'center' as const,
+    alignItems: "center",
+    padding: espaco.xl,
+    gap: espaco.sm,
+  },
+  titulo: {
+    ...tipografia.corpo,
+    fontWeight: tipografia.acao.fontWeight,
   },
   texto: {
     ...tipografia.corpo,
     color: cores.textoFraco,
-    textAlign: 'center' as const,
+    textAlign: "center",
   },
 });
