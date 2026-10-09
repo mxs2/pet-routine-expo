@@ -8,34 +8,48 @@
 // tudo vem daqui.
 //
 // Regra: `as const` AQUI, nunca dentro de `StyleSheet.create`.
-//
-// ⚠️  Preencha este arquivo PRIMEIRO — os demais dependem dele.
 // ============================================================
 
 export const cores = {
-  fundo: '#FEF7EE',
-  cartao: '#FFFFFF',
-  // TODO P2.1: complete com pelo menos mais cinco tokens de cor:
-  //   texto, textoFraco, primaria, sucesso, erro.
-  //   Escolha cores que façam sentido para um app de pets.
-  //   Exemplo: primaria poderia ser um laranja acolhedor.
+  fundo: "#FEF7EE",
+  cartao: "#FFFFFF",
+  texto: "#2B2118",
+  textoFraco: "#6B6459",
+  primaria: "#E8772E",
+  sucesso: "#2E8B57",
+  erro: "#C0392B",
+  borda: "#E2D6C6",
+  sombra: "rgba(43, 33, 24, 0.12)",
 } as const;
 
 export const espaco = {
-  // TODO P2.2: escala de no mínimo 4 degraus (xs, sm, md, lg).
-  //   Escolha uma progressão consistente — 4/8/16/24 é um bom default.
-  //   Exemplo: xs: 4, sm: 8, md: 16, lg: 24
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+} as const;
+
+export const raio = {
+  sm: 8,
+  md: 12,
+} as const;
+
+export const borda = {
+  fina: 1,
+  destaque: 2,
 } as const;
 
 export const tipografia = {
-  // TODO P2.3: titulo, corpo, legenda. Cada um é um objeto de estilo
-  //   de TEXTO (fontSize, fontWeight, color).
-  //   A legenda pode reaproveitar `cores.textoFraco`.
-  //   Não inclua layout (margin, padding) — isso é decisão do componente.
-  //
-  //   Exemplo de formato:
-  //   titulo: { fontSize: 20, fontWeight: '600' as const, color: cores.texto },
+  titulo: { fontSize: 22, fontWeight: "700", color: cores.texto },
+  corpo: { fontSize: 16, fontWeight: "400", color: cores.texto },
+  legenda: { fontSize: 13, fontWeight: "400", color: cores.textoFraco },
+  acao: { fontSize: 16, fontWeight: "600", color: cores.primaria },
 } as const;
 
-// TODO P2.4: por que este arquivo usa `as const` e o StyleSheet.create
-//   do componente NÃO usa? Responda em um comentário de uma linha aqui.
+export const sombra = {
+  cartao: `0 2px 6px ${cores.sombra}`,
+  destaque: `0 4px 12px ${cores.sombra}`,
+} as const;
+
+// `as const` preserva os literais ('700', 16) que o StyleSheet exige; no StyleSheet.create o próprio create já tipa e valida cada estilo.
