@@ -22,7 +22,21 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-image"
+      "expo-image",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permita o acesso à câmera para fotografar o passeio do seu pet.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permita o acesso à localização para registrar onde foi o passeio do seu pet."
+        }
+      ]
     ]
   }
 }
