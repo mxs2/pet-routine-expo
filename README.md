@@ -139,3 +139,12 @@ Cada falha tem uma mensagem própria. Cada mensagem diz ao usuário o que fazer.
 - **Foto no cache:** `takePictureAsync({ base64: false })` salva a foto no cache do app. A foto não vai para a galeria. O sistema pode apagar o cache. Não há envio para servidor, porque esta prática não usa rede.
 - **Dados em memória:** a lista só existe em memória. Puxar a lista para baixo volta ao mock.
 - **Fotos do mock:** são imagens de 1×1 pixel dentro do código (data URI). Elas aparecem como uma cor sólida e não precisam de rede.
+
+## Prática 3.4 (bônus): nível do comedouro
+
+No topo da lista, toque em **"Nivelar o comedouro"**. A tela fica em `src/screens/comedouro.tsx`.
+
+- **Sensor:** acelerômetro. Com o telefone parado, ele mede a gravidade, que indica a inclinação. O giroscópio mede só a velocidade de rotação. Parado, ele lê zero em qualquer ângulo.
+- **Intervalo de leitura: 100 ms (10 leituras por segundo).** Cada leitura atualiza o estado e desenha a tela de novo. Com 16 ms, seriam 60 desenhos por segundo, e a tela pode travar em aparelhos fracos. Acima de 200 ms, a bolha anda aos saltos e fica difícil ajustar o comedouro.
+- **Nivelado:** a bolha fica verde quando `x` e `y` estão abaixo de 0,02 g (cerca de 1°). Um limite menor faria a cor piscar por causa do ruído do sensor.
+- **Ligar e desligar:** "Ligar" abre uma assinatura só. "Desligar" e "Voltar para a lista" chamam `remove()`.
