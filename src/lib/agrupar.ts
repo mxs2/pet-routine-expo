@@ -6,30 +6,28 @@
 // Moram aqui para serem testáveis e reutilizáveis independentemente.
 // ============================================================
 
-import type { Pet } from '../types/pet';
+import {
+  type Pet,
+  type StatusPasseio,
+  rotuloStatusPasseio,
+} from "../types/pet";
 
 export type Secao = { title: string; data: Pet[] };
 
+// Ordem das seções: pendente primeiro, porque é o que ainda exige ação do
+// tutor hoje; cancelado em seguida, porque pode precisar ser remarcado;
+// concluído por último, porque já está resolvido e só serve de histórico.
+const ORDEM_STATUS: StatusPasseio[] = ["pendente", "cancelado", "concluido"];
+
 export function agrupar(pets: Pet[]): Secao[] {
-  // TODO P3.2: agrupe pelo critério que o grupo escolheu.
-  //   Sugestão: statusPasseio (use rotuloStatusPasseio como título da seção).
-  //   Alternativas válidas: espécie ou faixa etária.
-  //
-  //   Exemplo de abordagem:
-  //     1. Crie um Map<string, Pet[]>
-  //     2. Itere pelos pets, adicionando cada um ao grupo correto
-  //     3. Converta o Map em Secao[]
-  //
-  // TODO P3.3: descarte grupos vazios — seção sem itens não aparece na lista.
-  //
-  // TODO P3.4: a ordem dos grupos é uma DECISÃO de produto.
-  //   Escreva num comentário qual foi a sua e por quê.
-  //   Ex: "pendente primeiro porque é o que exige ação do dono"
-  return [];
+  return ORDEM_STATUS.map((status) => ({
+    title: rotuloStatusPasseio(status),
+    data: pets.filter((pet) => pet.statusPasseio === status),
+  })).filter((secao) => secao.data.length > 0);
 }
 
 export function filtrarPorNome(pets: Pet[], busca: string): Pet[] {
-  // TODO P3.5: busca case-insensitive. Busca vazia devolve todos.
-  //   Dica: normalize com toLowerCase() em ambos os lados.
-  return pets;
+  const termo = busca.trim().toLowerCase();
+  if (termo === "") return pets;
+  return pets.filter((pet) => pet.nome.toLowerCase().includes(termo));
 }
